@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0b1014">
 <title>轮机背词 · 测试版下载</title>
 <style>
   :root { color-scheme: dark; }
@@ -13,50 +14,54 @@
     background: radial-gradient(900px 500px at 10% -10%, #14313a 0%, transparent 60%), #0b1014;
     color: #e8f1f4; display: flex; justify-content: center;
   }
-  .wrap { width: 100%; max-width: 460px; }
-  h1 { font-size: 19px; margin: 0 0 6px; display: flex; align-items: center; gap: 8px; }
+  .wrap { width: 100%; max-width: 470px; }
+  h1 { font-size: 19px; margin: 0 0 6px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
   .dot { width: 8px; height: 8px; border-radius: 50%; background: #35e0c9; box-shadow: 0 0 12px #35e0c9; }
   .badge { font-size: 10px; font-weight: 600; letter-spacing: .6px; color: #ffd479;
     border: 1px solid rgba(255,196,87,.45); background: rgba(255,196,87,.1);
     border-radius: 999px; padding: 2px 8px; }
-  .sub { font-size: 12px; color: #5d7079; margin-bottom: 22px; letter-spacing: .3px; }
+  .sub { font-size: 12px; color: #5d7079; margin-bottom: 22px; letter-spacing: .3px; line-height: 1.7; }
   a.card {
     display: block; text-decoration: none; color: inherit; margin-bottom: 12px;
     background: #151e26; border: 1px solid #24323d; border-radius: 16px; padding: 16px 18px;
     transition: .16s;
   }
   a.card:active { transform: scale(.99); border-color: #35e0c9; }
-  .t { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
-  .d { font-size: 12px; color: #8ba0ab; line-height: 1.65; }
-  .k { font-size: 11.5px; color: #35e0c9; margin-top: 8px; }
-  .note { margin-top: 22px; font-size: 12px; color: #5d7079; line-height: 1.85; }
+  .t { font-size: 15px; font-weight: 600; margin-bottom: 5px; display: flex; align-items: center; gap: 7px; }
+  .t .n { font-size: 11px; color: #0b1014; background: #35e0c9; border-radius: 6px; padding: 1px 6px; font-weight: 700; }
+  .d { font-size: 12px; color: #8ba0ab; line-height: 1.7; }
+  .k { font-size: 11.5px; color: #35e0c9; margin-top: 9px; }
+  .note { margin-top: 22px; font-size: 12px; color: #5d7079; line-height: 1.9;
+    background: #101a21; border: 1px solid #1d2b34; border-radius: 14px; padding: 14px 16px; }
   .note b { color: #8ba0ab; font-weight: 600; }
-  .foot { margin-top: 26px; font-size: 11px; color: #3f5058; text-align: center; }
+  .note div + div { margin-top: 10px; }
+  .foot { margin-top: 24px; font-size: 11px; color: #3f5058; text-align: center; line-height: 1.8; }
 </style>
 </head>
 <body>
 <div class="wrap">
   <h1><span class="dot"></span>轮机背词<span class="badge">测试版</span></h1>
-  <div class="sub">2.0.0-beta.1 · 跟正式版各存各的进度，随便折腾</div>
+  <div class="sub">2.0.0-beta.1 · 跟正式版各存各的进度，随便折腾<br>这个地址在公网上，什么时候都能打开</div>
 
-  <a class="card" href="lunji-words-beta.apk" download>
-    <div class="t">① 装测试版 App（推荐）</div>
-    <div class="d">lunji-words-beta.apk · 约 109 KB<br>装完桌面会出现「轮机背词·测试」，跟正式版能同时装着</div>
+  <a class="card" href="lunji-words-beta.apk">
+    <div class="t"><span class="n">①</span>装测试版 App</div>
+    <div class="d">lunji-words-beta.apk · 约 109 KB<br>装完桌面出现「轮机背词·测试」，跟正式版能同时装着、进度互不影响</div>
     <div class="k">点这里下载 →</div>
   </a>
 
   <a class="card" href="index.html">
-    <div class="t">② 先不装，直接打开网页版</div>
-    <div class="d">同一份页面，浏览器里直接能背；朗读走手机自带语音，震动和热更换页面要装 App 才有</div>
+    <div class="t"><span class="n">②</span>不想装，直接背</div>
+    <div class="d">同一份页面，浏览器里打开就能用；朗读走手机自带语音<br>震动、热更换页面这两个要装 App 才有</div>
     <div class="k">点这里打开 →</div>
   </a>
 
   <div class="note">
-    <b>装不上怎么办</b>：下载完点那个 apk，如果提示「禁止安装未知应用」，就点「设置」→ 允许这个浏览器安装，再回来点一次。<br>
-    <b>这个页面只有同一个 WiFi 下能打开</b>：电脑关了或者换了网络，地址就失效了，换回 App 里正常用。
+    <div><b>装不上</b>：点 apk 之后如果提示「已屏蔽不安全的安装」或「禁止安装未知应用」，点「设置」→ 允许这个浏览器 / 文件管理器安装，再回来点一次。</div>
+    <div><b>下不下来</b>：这个包只有 109 KB，网络再差也几秒；卡住就刷新这个页面重来一次。</div>
+    <div><b>装完先看这个</b>：顶栏左上角那个 <b>⚗</b> 就是实验台，新功能全挂在那里的开关上，坏了关掉就行。</div>
   </div>
 
-  <div class="foot">电脑上 python -m http.server 8098 · 这一步只为了把包递到手机</div>
+  <div class="foot">正式版不动它 · 测试版 v2.0.0-beta.1<br>github.com/ResionSu4399/ship-english-beta</div>
 </div>
 </body>
 </html>
