@@ -1,0 +1,9 @@
+{
+  "version": "2.0.0-beta.1",
+  "apkVersion": "2.0.0-beta.1",
+  "html": "index.html",
+  "apk": "lunji-words-beta.apk",
+  "size": 158033,
+  "built": "2026-11-27 15:31:19",
+  "channel": "beta"
+}
