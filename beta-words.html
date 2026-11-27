@@ -1,0 +1,2813 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0b1014">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="轮机背词·测试">
+<title>轮机英语 · 背词（测试版）</title>
+<style>
+:root {
+  --bg: #0b1014;
+  --bg2: #10171d;
+  --panel: #151e26;
+  --panel2: #1b262f;
+  --line: #24323d;
+  --txt: #e8f1f4;
+  --dim: #8ba0ab;
+  --dim2: #5d7079;
+  --acc: #35e0c9;
+  --acc2: #6ee7ff;
+  --ok: #38d67f;
+  --bad: #ff6b6b;
+  --warn: #ffc857;
+  --r: 18px;
+}
+
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+html { height: auto; }
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+    "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  background:
+    radial-gradient(1100px 620px at 12% -12%, #14313a 0%, transparent 60%),
+    radial-gradient(900px 520px at 96% 6%, #16283f 0%, transparent 58%),
+    var(--bg);
+  color: var(--txt);
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 18px 14px 40px;
+}
+
+.app { width: 100%; max-width: 860px; display: flex; flex-direction: column; gap: 14px; }
+/* 子项一律不压缩：列表拉长时 chips / 统计不能被吃掉 */
+.app > * { flex: 0 0 auto; }
+
+/* ── 顶部 ── */
+.hd { display: flex; align-items: center; gap: 12px; padding: 2px 4px; }
+.brand { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0; }
+.brand h1 {
+  margin: 0; font-size: 17px; font-weight: 650; letter-spacing: .3px;
+  display: flex; align-items: center; gap: 8px;
+}
+.brand h1 .dot {
+  width: 8px; height: 8px; border-radius: 50%; background: var(--acc);
+  box-shadow: 0 0 12px var(--acc);
+}
+.brand .sub { font-size: 11.5px; color: var(--dim2); letter-spacing: .4px; }
+.icon-btn {
+  width: 38px; height: 38px; border-radius: 12px; border: 1px solid var(--line);
+  background: var(--panel); color: var(--dim); font-size: 16px; cursor: pointer;
+  display: grid; place-items: center; transition: .18s;
+}
+.icon-btn:hover { color: var(--acc); border-color: #2f4756; transform: translateY(-1px); }
+
+/* ── 统计 ── */
+.stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.stat {
+  background: linear-gradient(180deg, var(--panel) 0%, #121a20 100%);
+  border: 1px solid var(--line); border-radius: 14px; padding: 9px 10px;
+}
+.stat .k { font-size: 10.5px; color: var(--dim2); letter-spacing: .7px; text-transform: uppercase; }
+.stat .v { font-size: 18px; font-weight: 660; margin-top: 2px; font-variant-numeric: tabular-nums; }
+.stat .v small { font-size: 11px; color: var(--dim2); font-weight: 400; margin-left: 2px; }
+.stat.hot .v { color: var(--acc); }
+
+/* ── 筛选 chips ── */
+.chips { display: flex; gap: 7px; overflow-x: auto; padding-bottom: 2px; scrollbar-width: none; }
+.chips::-webkit-scrollbar { display: none; }
+.chip {
+  flex: 0 0 auto; padding: 6px 12px; border-radius: 999px; font-size: 12.5px;
+  border: 1px solid var(--line); background: var(--panel); color: var(--dim);
+  cursor: pointer; transition: .16s; white-space: nowrap;
+}
+.chip:hover { color: var(--txt); border-color: #2f4756; }
+.chip.on { background: rgba(53, 224, 201, .12); border-color: rgba(53, 224, 201, .5); color: var(--acc); }
+.chip .n { opacity: .55; font-size: 11px; margin-left: 3px; }
+
+/* 第二排：分类。单词多了以后第一排只留四个常用筛，分类单占一行横向滑 */
+.chips.cats { margin-top: -7px; gap: 6px; }
+/* 右边留一道渐隐，提示这排还能往左滑 */
+.chips.cats {
+  -webkit-mask-image: linear-gradient(90deg, #000 0, #000 calc(100% - 30px), transparent 100%);
+  mask-image: linear-gradient(90deg, #000 0, #000 calc(100% - 30px), transparent 100%);
+}
+.chip.sm { font-size: 11.5px; padding: 5px 10px; border-radius: 9px; color: var(--dim2); }
+.chip.sm:hover { color: var(--txt); }
+.chip.sm.on { color: var(--acc); }
+.cats-label {
+  flex: 0 0 auto; align-self: center; font-size: 10.5px; letter-spacing: 1px;
+  color: #445a64; padding-right: 2px;
+}
+
+/* ── 模式 tabs ── */
+.tabs {
+  display: flex; gap: 4px; padding: 4px; background: var(--panel);
+  border: 1px solid var(--line); border-radius: 14px;
+}
+.tab {
+  flex: 1; padding: 9px 4px; border: 0; border-radius: 11px; background: transparent;
+  color: var(--dim); font-size: 13px; cursor: pointer; transition: .16s;
+  font-family: inherit; display: flex; align-items: center; justify-content: center; gap: 5px;
+}
+.tab:hover { color: var(--txt); }
+.tab.on { background: linear-gradient(180deg, #22323d, #1a262f); color: var(--acc); box-shadow: 0 2px 10px #0006; }
+.tab .kbd { font-size: 9.5px; opacity: .5; border: 1px solid currentColor; border-radius: 4px; padding: 0 3px; }
+
+/* ── 舞台 ── */
+.stage { position: relative; min-height: 340px; }
+
+/* 卡片翻转 */
+.card-wrap {
+  perspective: 1600px;
+  transition: transform .3s cubic-bezier(.2, .9, .3, 1), opacity .3s;
+  will-change: transform;
+}
+.card {
+  position: relative; width: 100%; min-height: 300px; transform-style: preserve-3d;
+  transition: transform .5s cubic-bezier(.4, .05, .2, 1); cursor: pointer;
+  touch-action: pan-y;
+  user-select: none; -webkit-user-select: none; -webkit-touch-callout: none;
+}
+.card.flipped { transform: rotateY(180deg); }
+.face {
+  position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden;
+  border-radius: var(--r); padding: 26px 22px;
+  touch-action: pan-y;
+  display: flex; flex-direction: column; justify-content: center; align-items: center;
+  text-align: center; gap: 14px; border: 1px solid var(--line);
+  background: linear-gradient(160deg, #17222b 0%, #101820 100%);
+  box-shadow: 0 18px 44px -22px #000, inset 0 1px 0 #ffffff0a;
+  overflow-y: auto;
+}
+.face::after {
+  content: ""; position: absolute; inset: 0; border-radius: var(--r); pointer-events: none;
+  background: radial-gradient(520px 200px at 50% 0%, rgba(53, 224, 201, .07), transparent 70%);
+}
+.face.back {
+  transform: rotateY(180deg);
+  background: linear-gradient(160deg, #16252c 0%, #101a1e 100%);
+}
+.cat-tag {
+  font-size: 10.5px; letter-spacing: 1.2px; color: var(--dim2); text-transform: uppercase;
+  border: 1px solid var(--line); border-radius: 999px; padding: 3px 9px;
+}
+.word {
+  font-size: clamp(26px, 6.4vw, 40px); font-weight: 640; line-height: 1.22;
+  letter-spacing: -.4px; word-break: break-word;
+}
+.pos { font-size: 12.5px; color: var(--acc2); font-style: italic; opacity: .8; }
+.meta-line {
+  display: flex; align-items: baseline; justify-content: center; gap: 9px; flex-wrap: wrap;
+  max-width: 94%;
+}
+.ipa {
+  font-size: 15px; color: var(--acc2); opacity: .92; line-height: 1.5;
+  letter-spacing: .2px; word-break: break-word;
+  font-family: "Lucida Sans Unicode", "Segoe UI", "DejaVu Sans", "Arial Unicode MS", system-ui, sans-serif;
+}
+.hom {
+  font-size: 13.5px; color: var(--dim); line-height: 1.6; max-width: 94%;
+  display: flex; align-items: center; justify-content: center; gap: 7px; flex-wrap: wrap;
+}
+.hom.small { font-size: 12px; }
+.hom-tag {
+  flex: 0 0 auto; font-size: 9.5px; letter-spacing: 1.2px; color: var(--dim2);
+  border: 1px solid var(--line); border-radius: 999px; padding: 1px 6px; line-height: 1.5;
+}
+.back-word { font-size: 12.5px; color: var(--dim2); line-height: 1.6; }
+.zh { font-size: clamp(22px, 5.4vw, 32px); font-weight: 620; color: var(--txt); }
+.phrase {
+  font-size: 13.5px; color: var(--dim); line-height: 1.6; max-width: 92%;
+  border-left: 2px solid rgba(53, 224, 201, .45); padding-left: 10px; text-align: left;
+}
+.hint { font-size: 11.5px; color: var(--dim2); letter-spacing: .3px; }
+.card-tools {
+  position: absolute; top: 12px; right: 12px; display: flex; gap: 8px; z-index: 3;
+}
+.tool-btn {
+  width: 34px; height: 34px; border-radius: 50%;
+  border: 1px solid var(--line); background: #ffffff08; color: var(--dim); cursor: pointer;
+  font-size: 15px; display: grid; place-items: center; transition: .16s; padding: 0;
+}
+.tool-btn:hover { color: var(--acc); border-color: rgba(53, 224, 201, .5); }
+.tool-btn.flip-btn { font-size: 13px; font-weight: 640; letter-spacing: .5px; }\n.tool-btn.on { color: var(--warn); border-color: rgba(255, 200, 87, .55); background: rgba(255, 200, 87, .12); }
+
+/* 操作按钮 */
+.actions { display: flex; gap: 10px; margin-top: 14px; }
+.btn {
+  flex: 1; padding: 14px 16px; border-radius: 14px; border: 1px solid var(--line);
+  background: var(--panel); color: var(--txt); font-size: 14.5px; font-weight: 560;
+  font-family: inherit; cursor: pointer; transition: .16s; display: flex;
+  align-items: center; justify-content: center; gap: 7px;
+}
+.btn:hover { transform: translateY(-1px); }
+.btn:active { transform: translateY(0) scale(.99); }
+.btn.ok:hover { border-color: rgba(56, 214, 127, .6); color: var(--ok); background: rgba(56, 214, 127, .07); }
+.btn.bad:hover { border-color: rgba(255, 107, 107, .6); color: var(--bad); background: rgba(255, 107, 107, .07); }
+.btn.primary {
+  background: linear-gradient(180deg, rgba(53, 224, 201, .18), rgba(53, 224, 201, .08));
+  border-color: rgba(53, 224, 201, .45); color: var(--acc);
+}
+.btn.primary:hover { background: rgba(53, 224, 201, .22); }
+.btn:disabled { opacity: .4; cursor: default; transform: none; }
+.btn .kbd { font-size: 10px; opacity: .55; border: 1px solid currentColor; border-radius: 4px; padding: 0 4px; }
+
+/* ── 测验 ── */
+.q-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; gap: 10px; }
+.q-prompt {
+  font-size: clamp(24px, 5.6vw, 34px); font-weight: 650; line-height: 1.25;
+  padding: 22px 6px 6px; letter-spacing: -.3px;
+}
+.q-sub { font-size: 13px; color: var(--dim2); padding: 0 6px 16px; }
+.opts { display: grid; gap: 9px; }
+.opt {
+  display: flex; align-items: center; gap: 11px; padding: 14px 15px; border-radius: 14px;
+  border: 1px solid var(--line); background: var(--panel); color: var(--txt);
+  font-size: 15px; font-family: inherit; cursor: pointer; text-align: left; transition: .15s;
+  width: 100%;
+}
+.opt:hover:not(.done) { border-color: #33505e; background: var(--panel2); transform: translateX(2px); }
+.opt .idx {
+  flex: 0 0 22px; height: 22px; border-radius: 7px; background: #ffffff0d; color: var(--dim2);
+  font-size: 11.5px; display: grid; place-items: center; font-variant-numeric: tabular-nums;
+}
+.opt.correct { border-color: rgba(56, 214, 127, .65); background: rgba(56, 214, 127, .1); color: #b9f5d3; }
+.opt.correct .idx { background: rgba(56, 214, 127, .25); color: var(--ok); }
+.opt.wrong { border-color: rgba(255, 107, 107, .6); background: rgba(255, 107, 107, .1); color: #ffd2d2; animation: shake .32s; }
+.opt.wrong .idx { background: rgba(255, 107, 107, .22); color: var(--bad); }
+.opt.done { cursor: default; }
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  75% { transform: translateX(5px); }
+}
+
+/* ── 拼写 ── */
+.spell-box { display: flex; flex-direction: column; gap: 11px; }
+.spell-input {
+  width: 100%; padding: 15px 16px; border-radius: 14px; border: 1px solid var(--line);
+  background: #0c131a; color: var(--txt); font-size: 19px; font-family: inherit;
+  letter-spacing: .3px; outline: none; transition: .16s;
+}
+.spell-input:focus { border-color: rgba(53, 224, 201, .55); box-shadow: 0 0 0 3px rgba(53, 224, 201, .09); }
+.spell-input.ok { border-color: rgba(56, 214, 127, .7); box-shadow: 0 0 0 3px rgba(56, 214, 127, .12); }
+.spell-input.bad { border-color: rgba(255, 107, 107, .7); box-shadow: 0 0 0 3px rgba(255, 107, 107, .12); }
+.feedback { font-size: 13.5px; line-height: 1.65; min-height: 22px; padding: 0 4px; }
+.feedback.ok { color: var(--ok); }
+.feedback.bad { color: var(--bad); }
+.feedback em { color: var(--txt); font-style: normal; font-weight: 600; }
+
+/* ── 列表 ── */
+/* ── 列表 ── */
+.search-box { margin-bottom: 10px; }
+.search-input {
+  width: 100%; padding: 11px 14px; border-radius: 12px; border: 1px solid var(--line);
+  background: #0c131a; color: var(--txt); font-size: 14px; font-family: inherit;
+  outline: none; transition: .16s;
+}
+.search-input:focus { border-color: rgba(53, 224, 201, .5); box-shadow: 0 0 0 3px rgba(53, 224, 201, .08); }
+.search-input::placeholder { color: #4a6470; }
+.search-input::-webkit-search-cancel-button { -webkit-appearance: none; height: 14px; width: 14px; background: #6d8794; cursor: pointer; border-radius: 50%; }
+.phrase-hit { color: #55707d; font-style: italic; }
+.search-empty { text-align: center; color: var(--dim2); font-size: 13px; padding: 34px 0; }
+.list { display: flex; flex-direction: column; gap: 7px; }
+.list::-webkit-scrollbar { width: 6px; }
+.list::-webkit-scrollbar-thumb { background: #22323d; border-radius: 3px; }
+.row {
+  display: grid; grid-template-columns: 34px 1fr auto; align-items: center; gap: 11px;
+  padding: 11px 13px; border-radius: 12px; border: 1px solid var(--line);
+  background: var(--panel); cursor: pointer; transition: .14s;
+}
+.row:hover { background: var(--panel2); border-color: #33505e; }
+.lv { display: inline-flex; gap: 3px; vertical-align: middle; align-items: center; }
+.lv i { display: block; width: 4px; height: 14px; border-radius: 2px; background: #2c3d49; }
+.lv i.f { background: var(--acc); }
+.row .en { font-size: 14.5px; font-weight: 560; }
+.row .zh2 { font-size: 12px; color: var(--dim2); margin-top: 2px; }
+.pos-inline { color: #5d7079; font-size: 11.5px; font-style: italic; font-weight: 400; }
+.ipa2 {
+  margin-left: 8px; font-size: 11.5px; color: #6d8794; letter-spacing: .1px;
+  font-family: "Lucida Sans Unicode", "Segoe UI", "DejaVu Sans", system-ui, sans-serif;
+}
+.row .fav { font-size: 15px; color: var(--dim2); background: none; border: 0; cursor: pointer; padding: 4px; }
+.row .fav.on { color: var(--warn); }
+
+/* ── 进度条 ── */
+.progress { display: flex; align-items: center; gap: 10px; padding: 0 4px; }
+.bar { flex: 1; height: 5px; border-radius: 3px; background: #1a252d; overflow: hidden; }
+.bar i { display: block; height: 100%; width: 0; border-radius: 3px; background: linear-gradient(90deg, var(--acc2), var(--acc)); transition: width .35s; }
+.progress .t { font-size: 11.5px; color: var(--dim2); font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+/* ── 开屏更新横幅 ── */
+.banner {
+  display: none; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 14px;
+  border: 1px solid rgba(53, 224, 201, .45);
+  background: linear-gradient(180deg, rgba(53, 224, 201, .16), rgba(53, 224, 201, .06));
+}
+.banner.show { display: flex; }
+.banner .bn-txt { flex: 1; font-size: 13px; color: var(--txt); }
+.banner .bn-txt b { color: var(--acc); font-weight: 650; }
+.banner .bn-go {
+  border: 0; background: var(--acc); color: #06211d; font-weight: 700; font-size: 13px;
+  padding: 7px 15px; border-radius: 10px; cursor: pointer; font-family: inherit;
+}
+.banner .bn-x {
+  border: 0; background: none; color: var(--dim2); font-size: 15px; cursor: pointer; padding: 2px 4px;
+}
+
+/* ── 设置里的更新卡片与分节标题 ── */
+.upd-card {
+  border: 1px solid var(--line); border-radius: 16px; padding: 12px 13px; margin-bottom: 4px;
+  background: linear-gradient(180deg, #16232b 0%, #111a21 100%);
+}
+.upd-row { display: flex; align-items: center; gap: 10px; }
+.upd-cur { flex: 1; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.upd-cur b { font-size: 17px; color: var(--acc); font-variant-numeric: tabular-nums; }
+.upd-cur small { font-size: 11.5px; color: var(--dim2); }
+.mini.primary { background: rgba(53, 224, 201, .16); border-color: rgba(53, 224, 201, .5); color: var(--acc); }
+.mini.primary:hover { background: rgba(53, 224, 201, .24); color: var(--acc); }
+.set-sec {
+  margin: 20px 0 4px; font-size: 11px; letter-spacing: 1.4px; color: #4a6470;
+  border-bottom: 1px solid #1b262f; padding-bottom: 6px;
+}
+.log-more { margin-top: 10px; }
+/* ── 设置面板 ── */
+.mask {
+  position: fixed; inset: 0; background: #04070acc; backdrop-filter: blur(6px);
+  display: none; align-items: flex-end; justify-content: center; z-index: 50; padding: 0;
+}
+.mask.show { display: flex; animation: fade .2s; }
+@keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+.sheet {
+  width: 100%; max-width: 860px; background: #111a21; border: 1px solid var(--line);
+  border-radius: 22px 22px 0 0; padding: 20px 18px 26px; max-height: 88vh; overflow-y: auto;
+  animation: up .24s cubic-bezier(.2, .9, .3, 1);
+}
+@keyframes up { from { transform: translateY(30px); opacity: .6; } to { transform: none; opacity: 1; } }
+.sheet h3 { margin: 0 0 14px; font-size: 15px; display: flex; align-items: center; gap: 8px; }
+.sheet h3 .x { margin-left: auto; background: none; border: 0; color: var(--dim2); font-size: 18px; cursor: pointer; }
+.set-row {
+  display: flex; align-items: center; gap: 12px; padding: 13px 0;
+  border-bottom: 1px solid #1b262f;
+}
+.set-row:last-of-type { border-bottom: 0; }
+.set-row .lab { flex: 1; font-size: 14px; }
+.set-row .lab small { display: block; color: var(--dim2); font-size: 11.5px; margin-top: 3px; }
+.set-row input[type="number"] {
+  width: 78px; padding: 8px 10px; border-radius: 10px; border: 1px solid var(--line);
+  background: #0c131a; color: var(--txt); font-size: 14px; font-family: inherit; text-align: center;
+}
+.set-row input[type="range"] { width: 130px; accent-color: var(--acc); }
+.switch {
+  position: relative; width: 46px; height: 26px; border-radius: 999px; background: #22323d;
+  border: 1px solid var(--line); cursor: pointer; transition: .2s; flex: 0 0 auto;
+}
+.switch::after {
+  content: ""; position: absolute; top: 3px; left: 3px; width: 18px; height: 18px;
+  border-radius: 50%; background: #8ba0ab; transition: .2s;
+}
+.switch.on { background: rgba(53, 224, 201, .3); border-color: rgba(53, 224, 201, .5); }
+.switch.on::after { left: 23px; background: var(--acc); }
+#backupText { height: 118px; }
+textarea.imp {
+  width: 100%; height: 96px; margin-top: 8px; padding: 11px; border-radius: 12px;
+  border: 1px solid var(--line); background: #0c131a; color: var(--txt);
+  font-size: 12.5px; font-family: ui-monospace, Consolas, monospace; line-height: 1.6;
+  resize: vertical; outline: none;
+}
+.mini-btns { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+/* 在线更新的地址框 */
+.url-input {
+  width: 100%; margin-top: 8px; padding: 11px 12px; border-radius: 12px; border: 1px solid var(--line);
+  background: #0c131a; color: var(--txt); font-size: 12.5px; outline: none; transition: .16s;
+  font-family: ui-monospace, Consolas, "Cascadia Mono", monospace;
+}
+.url-input:focus { border-color: rgba(53, 224, 201, .5); box-shadow: 0 0 0 3px rgba(53, 224, 201, .08); }
+.url-input::placeholder { color: #4a6470; }
+.mini {
+  padding: 9px 14px; border-radius: 11px; border: 1px solid var(--line); background: var(--panel);
+  color: var(--dim); font-size: 12.5px; font-family: inherit; cursor: pointer; transition: .15s;
+}
+.mini:hover { color: var(--txt); border-color: #33505e; }
+.mini.danger:hover { color: var(--bad); border-color: rgba(255, 107, 107, .5); }
+.mini.armed { color: var(--bad); border-color: rgba(255, 107, 107, .65); background: rgba(255, 107, 107, .1); }
+
+/* 分段选择 */
+.seg { display: flex; gap: 4px; padding: 3px; border: 1px solid var(--line); border-radius: 11px; background: #0c131a; }
+.seg button {
+  border: 0; background: transparent; color: var(--dim2); font-size: 11.5px; font-family: inherit;
+  padding: 6px 9px; border-radius: 8px; cursor: pointer; transition: .15s; white-space: nowrap;
+}
+.seg button:hover { color: var(--txt); }
+.seg button.on { background: #22323d; color: var(--acc); }
+
+/* ── 完成态 ── */
+.done-card {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 12px; min-height: 300px; text-align: center; border-radius: var(--r);
+  border: 1px solid var(--line); background: linear-gradient(160deg, #17222b, #101820);
+  padding: 30px 22px;
+}
+.done-card .big { font-size: 40px; }
+.done-card h2 { margin: 0; font-size: 19px; }
+.done-card p { margin: 0; color: var(--dim); font-size: 13.5px; line-height: 1.7; max-width: 360px; }
+
+.foot { text-align: center; font-size: 11px; color: #3f5058; padding-top: 4px; font-variant-numeric: tabular-nums; }
+.foot .ver { color: var(--acc); opacity: .7; }
+/* 页面是从网上下载下来的（不是安装包自带的）就挂个小标签，方便一眼确认在线更新生效了 */
+.foot .hot {
+  color: var(--acc); font-size: 10px; letter-spacing: .5px; margin-left: 5px;
+  border: 1px solid rgba(53, 224, 201, .38); border-radius: 4px; padding: 0 4px;
+}
+
+/* 更新日志 */
+.log { margin-top: 12px; display: flex; flex-direction: column; gap: 15px; }
+.log-item { border-left: 2px solid #22323d; padding-left: 12px; }
+.log-item.cur { border-left-color: var(--acc); }
+.log-v { font-size: 12.5px; color: var(--txt); font-weight: 620; letter-spacing: .2px; }
+.log-v span { color: var(--dim2); font-weight: 400; margin-left: 9px; font-size: 11px; }
+.log-list { margin: 6px 0 0; padding-left: 15px; color: var(--dim); font-size: 12px; line-height: 1.8; }
+.log-list li { margin: 0; }
+.log-tag {
+  color: var(--acc); font-weight: 600; margin-right: 6px; font-size: 10.5px;
+  border: 1px solid rgba(53, 224, 201, .35); border-radius: 4px; padding: 0 4px;
+}
+.log-tag.fix { color: var(--warn); border-color: rgba(255, 200, 87, .35); }
+
+@media (min-width: 720px) {
+  body { padding-top: 30px; }
+  .stats { grid-template-columns: repeat(4, 1fr); }
+  .stage { min-height: 380px; }
+  .card { min-height: 330px; }
+  .face { padding: 34px 30px; }
+}
+@media (max-width: 380px) {
+  .stats { grid-template-columns: repeat(2, 1fr); }
+  .tab span.txt { display: none; }
+}
+
+/* ════════════════════════════════════════════════════════════
+   测试版多出来的部分：徽标 / 实验台 / 统计页 / 浅色主题
+   ════════════════════════════════════════════════════════════ */
+
+/* ── 顶部「测试版」小徽标 ── */
+.beta-badge {
+  font-size: 10px; font-weight: 600; letter-spacing: .6px;
+  color: #ffd479; border: 1px solid rgba(255, 196, 87, .45);
+  background: rgba(255, 196, 87, .1);
+  border-radius: 999px; padding: 2px 8px; transform: translateY(-1px);
+}
+.exp-btn { color: #ffd479; border-color: rgba(255, 196, 87, .35); }
+.exp-btn:hover { color: #ffe6a7; border-color: rgba(255, 196, 87, .6); }
+
+/* 六个 tab 挤一点 */
+.tabs { gap: 3px; padding: 3px; }
+.tab { padding: 9px 2px; font-size: 12.5px; }
+
+/* ── 实验台 ── */
+.exp-note {
+  font-size: 12.5px; line-height: 1.75; color: var(--dim);
+  background: rgba(255, 196, 87, .07); border: 1px solid rgba(255, 196, 87, .22);
+  border-radius: 12px; padding: 11px 13px; margin-bottom: 6px;
+}
+.tag {
+  font-size: 10.5px; letter-spacing: .5px; padding: 3px 9px; border-radius: 999px;
+  border: 1px solid var(--line); color: var(--dim2);
+}
+.tag.ok { color: var(--ok); border-color: rgba(56, 214, 127, .45); background: rgba(56, 214, 127, .1); }
+.tag.off { color: var(--dim2); }
+
+/* ── 统计页 ── */
+.stat-wrap { display: flex; flex-direction: column; gap: 12px; padding-bottom: 8px; }
+.stat-top { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.sbig {
+  background: var(--panel); border: 1px solid var(--line); border-radius: 14px;
+  padding: 14px 10px; text-align: center;
+}
+.sbig b { display: block; font-size: 22px; font-weight: 660; color: var(--acc); font-variant-numeric: tabular-nums; }
+.sbig small { font-size: 10.5px; color: var(--dim2); letter-spacing: .4px; }
+
+.spane {
+  background: var(--panel); border: 1px solid var(--line); border-radius: 14px;
+  padding: 14px 15px 16px;
+}
+.spanel-t {
+  font-size: 12.5px; color: var(--txt); font-weight: 600; margin-bottom: 12px;
+  display: flex; align-items: baseline; gap: 8px;
+}
+.spanel-t small { font-size: 10.5px; color: var(--dim2); font-weight: 400; }
+
+.sbars { display: flex; align-items: flex-end; gap: 5px; height: 96px; }
+.sbar {
+  flex: 1; height: 100%; display: flex; flex-direction: column; justify-content: flex-end;
+  align-items: center; gap: 5px; cursor: pointer;
+}
+.sbar i {
+  display: block; width: 100%; min-height: 2px; border-radius: 4px 4px 2px 2px;
+  background: linear-gradient(180deg, var(--acc), rgba(53, 224, 201, .35));
+  transition: .18s;
+}
+.sbar.zero i { background: var(--line); min-height: 2px; }
+.sbar span { font-size: 9.5px; color: var(--dim2); font-variant-numeric: tabular-nums; }
+.sbar:active i { filter: brightness(1.35); }
+
+.srow { display: flex; align-items: center; gap: 10px; padding: 5px 0; }
+.srow .sl {
+  flex: 0 0 74px; font-size: 11.5px; color: var(--dim);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.srow .sbar2 { flex: 1; height: 8px; border-radius: 4px; background: #1a252d; overflow: hidden; }
+.srow .sbar2 i { display: block; height: 100%; border-radius: 4px; background: var(--acc); opacity: .8; }
+.srow .sn { flex: 0 0 58px; text-align: right; font-size: 11px; color: var(--dim2); font-variant-numeric: tabular-nums; }
+
+.sfix {
+  display: flex; align-items: baseline; gap: 8px; padding: 8px 0;
+  border-bottom: 1px solid var(--line); cursor: pointer;
+}
+.sfix:last-child { border-bottom: 0; }
+.sfix b { font-size: 14px; font-weight: 560; }
+.sfix span { font-size: 11.5px; color: var(--dim2); flex: 1; min-width: 0;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sfix em { font-size: 11px; font-style: normal; color: var(--bad); opacity: .85; }
+
+/* ══════════ 浅色主题（实验 · theme） ══════════
+   只换变量和几块硬写死的深色底，布局一点不动。 */
+html.day {
+  --bg: #eef4f7;
+  --bg2: #e6eef3;
+  --panel: #ffffff;
+  --panel2: #f2f8fb;
+  --line: #d5e2ea;
+  --txt: #10222c;
+  --dim: #4b6470;
+  --dim2: #7c93a0;
+  --acc: #0f9c8b;
+  --acc2: #1a7fa4;
+  --ok: #16874e;
+  --bad: #cc3a3a;
+  --warn: #a3730a;
+}
+html.day body {
+  background:
+    radial-gradient(1100px 620px at 12% -12%, #dcebf3 0%, transparent 60%),
+    radial-gradient(900px 520px at 96% 6%, #e3edf6 0%, transparent 58%),
+    var(--bg);
+  color: var(--txt);
+}
+html.day .face { background: linear-gradient(160deg, #ffffff 0%, #f1f7fa 100%); box-shadow: 0 14px 34px -26px #26404d, inset 0 1px 0 #fff; }
+html.day .face.back { background: linear-gradient(160deg, #f4fbf9 0%, #eef6f9 100%); }
+html.day .face::after { background: radial-gradient(520px 200px at 50% 0%, rgba(15, 156, 139, .08), transparent 70%); }
+html.day .tab.on { background: linear-gradient(180deg, #ffffff, #eef5f9); color: var(--acc); box-shadow: 0 2px 10px #0000000f; }
+html.day .seg, html.day .switch, html.day .url-input, html.day .mini,
+html.day .imp, html.day .search-input, html.day .spell-input { background: #f4f9fc; }
+html.day .switch.on { background: rgba(15, 156, 139, .25); }
+html.day .switch::after { background: #9db2bd; }
+html.day .switch.on::after { background: var(--acc); }
+html.day .sheet { background: #f8fbfd; }
+html.day .mask { background: #2a3d4780; }
+html.day .srow .sbar2 { background: #dfeaf0; }
+html.day .bar { background: #dbe7ee; }
+html.day .lv i { background: #cddce5; }
+html.day .opt .idx { background: #00000008; }
+html.day .opt.correct { color: #0c6b3d; }
+html.day .opt.wrong { color: #a02b2b; }
+html.day .foot { color: #90a6b2; }
+html.day .beta-badge { color: #8a5c00; border-color: rgba(196, 138, 0, .4); background: rgba(255, 196, 87, .18); }
+html.day .exp-btn { color: #8a5c00; border-color: rgba(196, 138, 0, .35); }
+html.day .exp-note { background: rgba(255, 196, 87, .16); border-color: rgba(196, 138, 0, .3); color: #5b4708; }
+html.day .banner { background: #ffffff; }
+
+  </style>
+</head>
+<body>
+<div class="app">
+
+  <header class="hd">
+    <div class="brand">
+      <h1><span class="dot"></span>轮机英语 · 背词<span class="beta-badge">测试版</span></h1>
+      <div class="sub">大连海事大学出版社 · 二三管轮适任词汇</div>
+    </div>
+    <button class="icon-btn exp-btn" id="openExp" title="实验台">⚗</button>
+    <button class="icon-btn" id="openSet" title="设置">⚙</button>
+  </header>
+
+  <div class="banner" id="banner"></div>
+
+  <section class="stats">
+    <div class="stat hot">
+      <div class="k">掌握</div>
+      <div class="v" id="statMastered">0<small>/0</small></div>
+    </div>
+    <div class="stat">
+      <div class="k">今日</div>
+      <div class="v" id="statToday">0<small>/20</small></div>
+    </div>
+    <div class="stat">
+      <div class="k">待复习</div>
+      <div class="v" id="statDue">0</div>
+    </div>
+    <div class="stat">
+      <div class="k">连续</div>
+      <div class="v" id="statStreak">0</div>
+    </div>
+  </section>
+
+  <div class="chips" id="chips"></div>
+  <div class="chips cats" id="cats"></div>
+
+  <nav class="tabs" id="tabs">
+    <button class="tab on" data-m="card">卡片</button>
+    <button class="tab" data-m="quiz">选择</button>
+    <button class="tab" data-m="spell">拼写</button>
+    <button class="tab" data-m="listen">听音</button>
+    <button class="tab" data-m="list">列表</button>
+    <button class="tab" data-m="stat">统计</button>
+  </nav>
+
+  <main class="stage" id="stage"></main>
+
+  <div class="progress">
+    <div class="bar"><i id="bar"></i></div>
+    <div class="t" id="ptext">0%</div>
+  </div>
+
+  <div class="foot" id="foot"></div>
+</div>
+
+<script>
+/* 轮机英语 · 二三管轮词库（大连海事大学出版社教材主题顺序）
+   字段：en 英文 / pos 词性 / ipa 音标 / hom 中文谐音 / zh 中文 / phrase 教材常见搭配 / cat 分类
+   加词照这个格式粘；音标和谐音可以留空字符串。
+   v1.7：50 → 253 词。新增词来自手写笔记（6 页），逐条回译核对过中文，重复的没再收一遍。
+*/
+window.WORDS = [
+  // ── 一、主机与柴油机结构 ─────────────────────────
+  { en: "marine diesel engine", pos: "n.", ipa: "/məˈriːn ˈdiːzəl ˈendʒɪn/", hom: "么-润 · 迪-则尔 · 恩-金", zh: "船用柴油机", phrase: "two-stroke / four-stroke marine diesel engine", cat: "主机" },
+  { en: "main engine", pos: "n.", ipa: "/meɪn ˈendʒɪn/", hom: "梅恩 · 恩-金", zh: "主机", phrase: "the main engine is running at full load", cat: "主机" },
+  { en: "auxiliary engine", pos: "n.", ipa: "/ɔːɡˈzɪliəri ˈendʒɪn/", hom: "奥格-齐-里-额-瑞 · 恩-金", zh: "辅机", phrase: "auxiliary engine room arrangement", cat: "主机" },
+  { en: "cylinder liner", pos: "n.", ipa: "/ˈsɪlɪndər ˈlaɪnər/", hom: "西-林-德 · 莱-纳", zh: "气缸套", phrase: "wear of the cylinder liner", cat: "主机" },
+  { en: "piston", pos: "n.", ipa: "/ˈpɪstən/", hom: "皮斯-腾", zh: "活塞", phrase: "piston crown / piston skirt；piston in cylinder 活塞在气缸里", cat: "主机" },
+  { en: "piston ring", pos: "n.", ipa: "/ˈpɪstən rɪŋ/", hom: "皮斯-腾 · 令", zh: "活塞环", phrase: "broken piston ring, ring groove", cat: "主机" },
+  { en: "connecting rod", pos: "n.", ipa: "/kəˈnektɪŋ rɑːd/", hom: "克-奈克-听 · 瑞阿德", zh: "连杆", phrase: "connecting rod bearing", cat: "主机" },
+  { en: "crankshaft", pos: "n.", ipa: "/ˈkræŋkʃæft/", hom: "克-阮克-沙夫特", zh: "曲轴", phrase: "crankshaft deflection", cat: "主机" },
+  { en: "crosshead", pos: "n.", ipa: "/ˈkrɔːshed/", hom: "克-罗斯-海德", zh: "十字头", phrase: "crosshead type engine", cat: "主机" },
+  { en: "bedplate", pos: "n.", ipa: "/ˈbedpleɪt/", hom: "贝德-普雷特", zh: "机座", phrase: "bedplate and frame", cat: "主机" },
+  { en: "stroke", pos: "n.", ipa: "/stroʊk/", hom: "斯-戳克", zh: "冲程；行程", phrase: "power stroke / intake stroke", cat: "主机" },
+  { en: "cycle", pos: "n.", ipa: "/ˈsaɪkl/", hom: "赛-扣", zh: "循环", phrase: "mechanical cycle of operation 机械工作循环", cat: "主机" },
+  { en: "camshaft", pos: "n.", ipa: "/ˈkæmʃæft/", hom: "开姆-沙夫特", zh: "凸轮轴", phrase: "camshaft driven by the crankshaft", cat: "主机" },
+  { en: "bearing", pos: "n.", ipa: "/ˈberɪŋ/", hom: "贝-令", zh: "轴承", phrase: "main bearing / connecting rod bearing", cat: "主机" },
+  { en: "rotor", pos: "n.", ipa: "/ˈroʊtər/", hom: "若-特", zh: "转子", phrase: "rotor and stator", cat: "主机" },
+  { en: "stator", pos: "n.", ipa: "/ˈsteɪtər/", hom: "斯-泰-特", zh: "定子", phrase: "stator winding", cat: "主机" },
+  { en: "gear", pos: "n.", ipa: "/ɡɪr/", hom: "吉尔", zh: "齿轮", phrase: "gear pump, gear train", cat: "主机" },
+  { en: "reduction gearbox", pos: "n.", ipa: "/rɪˈdʌkʃn ˈɡɪrbɑːks/", hom: "瑞-达克-申 · 吉尔-波克斯", zh: "减速齿轮箱", phrase: "main reduction gearbox", cat: "主机" },
+  { en: "motor", pos: "n.", ipa: "/ˈmoʊtər/", hom: "莫-特", zh: "电动机", phrase: "electric motor, motor starter", cat: "主机" },
+  { en: "indicator", pos: "n.", ipa: "/ˈɪndɪkeɪtər/", hom: "因-迪-凯-特", zh: "指示器；示功器", phrase: "indicator diagram 示功图", cat: "主机" },
+  { en: "turning", pos: "n.", ipa: "/ˈtɜːrnɪŋ/", hom: "特-宁", zh: "盘车；车削", phrase: "turning gear, turning the engine", cat: "主机" },
+  { en: "valve gear", pos: "n.", ipa: "/vælv ɡɪr/", hom: "外尔夫 · 吉尔", zh: "气阀机构", phrase: "camshaft valve gear", cat: "主机" },
+  { en: "engine horsepower", pos: "n.", ipa: "/ˈendʒɪn ˈhɔːrspaʊər/", hom: "恩-金 · 豪斯-泡-尔", zh: "发动机马力", phrase: "rated engine horsepower 额定马力", cat: "主机" },
+  { en: "gas turbine", pos: "n.", ipa: "/ɡæs ˈtɜːrbaɪn/", hom: "盖斯 · 特-拜恩", zh: "燃气轮机", phrase: "gas turbine plant", cat: "主机" },
+  { en: "internal combustion engine", pos: "n.", ipa: "/ɪnˈtɜːrnl kəmˈbʌstʃən ˈendʒɪn/", hom: "因-特-诺 · 肯-巴斯-申 · 恩-金", zh: "内燃机", phrase: "internal combustion engine principle", cat: "主机" },
+  { en: "controllable pitch propeller", pos: "n.", ipa: "/kənˈtroʊləbl pɪtʃ prəˈpelər/", hom: "肯-戳-勒-波 · 皮奇 · 普若-佩-勒", zh: "可调螺距螺旋桨", phrase: "CPP = controllable pitch propeller", cat: "主机" },
+  { en: "propeller design", pos: "n.", ipa: "/prəˈpelər dɪˈzaɪn/", hom: "普若-佩-勒 · 迪-宰恩", zh: "螺旋桨设计", phrase: "propeller design and pitch", cat: "主机" },
+  { en: "reversible", pos: "adj.", ipa: "/rɪˈvɜːrsəbl/", hom: "瑞-沃-瑟-波", zh: "可逆转的", phrase: "reversible main engine 可逆转主机", cat: "主机" },
+
+  // ── 二、燃烧、换气与调速 ─────────────────────────
+  { en: "cylinder head", pos: "n.", ipa: "/ˈsɪlɪndər hed/", hom: "西-林-德 · 海德", zh: "气缸盖", phrase: "cylinder head cover", cat: "燃烧换气" },
+  { en: "exhaust valve", pos: "n.", ipa: "/ɪɡˈzɔːst vælv/", hom: "伊格-造斯特 · 外尔夫", zh: "排气阀", phrase: "exhaust valve clearance", cat: "燃烧换气" },
+  { en: "fuel injector", pos: "n.", ipa: "/ˈfjuːəl ɪnˈdʒektər/", hom: "菲尤-尔 · 因-杰克-特", zh: "喷油器", phrase: "fuel injector nozzle", cat: "燃烧换气" },
+  { en: "turbocharger", pos: "n.", ipa: "/ˈtɜːrboʊtʃɑːrdʒər/", hom: "特-波-查-哲", zh: "涡轮增压器", phrase: "turbocharger surging", cat: "燃烧换气" },
+  { en: "scavenging", pos: "n.", ipa: "/ˈskævɪndʒɪŋ/", hom: "斯-凯-文-京", zh: "扫气", phrase: "scavenging air receiver", cat: "燃烧换气" },
+  { en: "compression", pos: "n.", ipa: "/kəmˈpreʃən/", hom: "肯-普雷-申", zh: "压缩", phrase: "compression stroke, compression ratio", cat: "燃烧换气" },
+  { en: "combustion", pos: "n.", ipa: "/kəmˈbʌstʃən/", hom: "肯-巴斯-申", zh: "燃烧", phrase: "combustion chamber", cat: "燃烧换气" },
+  { en: "dead center", pos: "n.", ipa: "/ded ˈsentər/", hom: "戴德 · 森-特", zh: "死点", phrase: "top / bottom dead center (TDC, BDC)", cat: "燃烧换气" },
+  { en: "firing order", pos: "n.", ipa: "/ˈfaɪərɪŋ ˈɔːrdər/", hom: "法-尔-令 · 奥-德", zh: "发火顺序", phrase: "firing order of the engine", cat: "燃烧换气" },
+  { en: "compression ratio", pos: "n.", ipa: "/kəmˈpreʃn ˈreɪʃioʊ/", hom: "肯-普雷-申 · 瑞-秀", zh: "压缩比", phrase: "increasing the compression ratio 提高压缩比", cat: "燃烧换气" },
+  { en: "mean effective pressure", pos: "n.", ipa: "/miːn ɪˈfektɪv ˈpreʃər/", hom: "命 · 伊-费克-提夫 · 普雷-瑟", zh: "平均有效压力", phrase: "brake mean effective pressure (BMEP)", cat: "燃烧换气" },
+  { en: "cetane", pos: "n.", ipa: "/ˈsiːteɪn/", hom: "西-泰恩", zh: "十六烷", phrase: "cetane number 十六烷值", cat: "燃烧换气" },
+  { en: "ignition quality", pos: "n.", ipa: "/ɪɡˈnɪʃn ˈkwɑːləti/", hom: "伊格-尼-申 · 夸-勒-提", zh: "发火质量", phrase: "ignition quality of the fuel", cat: "燃烧换气" },
+  { en: "ignition", pos: "n.", ipa: "/ɪɡˈnɪʃn/", hom: "伊格-尼-申", zh: "点火；发火", phrase: "ignition point", cat: "燃烧换气" },
+  { en: "ignition delay", pos: "n.", ipa: "/ɪɡˈnɪʃn dɪˈleɪ/", hom: "伊格-尼-申 · 迪-莱", zh: "滞燃期", phrase: "long ignition delay", cat: "燃烧换气" },
+  { en: "power stroke", pos: "n.", ipa: "/ˈpaʊər stroʊk/", hom: "泡-尔 · 斯-戳克", zh: "做功冲程", phrase: "power stroke = expansion stroke", cat: "燃烧换气" },
+  { en: "single acting", pos: "adj.", ipa: "/ˈsɪŋɡl ˈæktɪŋ/", hom: "辛-勾 · 艾克-听", zh: "单作用的", phrase: "single acting two-stroke engine", cat: "燃烧换气" },
+  { en: "top dead center", pos: "n.", ipa: "/tɑːp ded ˈsentər/", hom: "塔普 · 戴德 · 森-特", zh: "上止点（TDC）", phrase: "just before top dead center", cat: "燃烧换气" },
+  { en: "bottom dead center", pos: "n.", ipa: "/ˈbɑːtəm ded ˈsentər/", hom: "巴-腾 · 戴德 · 森-特", zh: "下止点（BDC）", phrase: "from top to bottom dead center", cat: "燃烧换气" },
+  { en: "exhaust gases", pos: "n.", ipa: "/ɪɡˈzɔːst ˈɡæsɪz/", hom: "伊格-造斯特 · 盖-西斯", zh: "废气", phrase: "exhaust gas boiler", cat: "燃烧换气" },
+  { en: "intake valve", pos: "n.", ipa: "/ˈɪnteɪk vælv/", hom: "因-泰克 · 外尔夫", zh: "进气阀", phrase: "intake valve opens", cat: "燃烧换气" },
+  { en: "valve overlap", pos: "n.", ipa: "/vælv ˈoʊvərlæp/", hom: "外尔夫 · 欧-沃-莱普", zh: "气阀重叠期", phrase: "valve overlap period", cat: "燃烧换气" },
+  { en: "injection", pos: "n.", ipa: "/ɪnˈdʒekʃn/", hom: "因-杰克-申", zh: "喷射；注入", phrase: "fuel injection timing", cat: "燃烧换气" },
+  { en: "intake stroke", pos: "n.", ipa: "/ˈɪnteɪk stroʊk/", hom: "因-泰克 · 斯-戳克", zh: "进气冲程", phrase: "intake stroke = suction stroke", cat: "燃烧换气" },
+  { en: "suction stroke", pos: "n.", ipa: "/ˈsʌkʃn stroʊk/", hom: "萨克-申 · 斯-戳克", zh: "吸气冲程", phrase: "suction stroke of a four-stroke engine", cat: "燃烧换气" },
+  { en: "compression stroke", pos: "n.", ipa: "/kəmˈpreʃn stroʊk/", hom: "肯-普雷-申 · 斯-戳克", zh: "压缩冲程", phrase: "during the compression stroke", cat: "燃烧换气" },
+  { en: "expansion stroke", pos: "n.", ipa: "/ɪkˈspænʃn stroʊk/", hom: "伊克-斯-潘-申 · 斯-戳克", zh: "膨胀冲程", phrase: "expansion stroke = power stroke", cat: "燃烧换气" },
+  { en: "exhaust stroke", pos: "n.", ipa: "/ɪɡˈzɔːst stroʊk/", hom: "伊格-造斯特 · 斯-戳克", zh: "排气冲程", phrase: "at the end of the exhaust stroke", cat: "燃烧换气" },
+  { en: "downward", pos: "adv.", ipa: "/ˈdaʊnwərd/", hom: "当-沃德", zh: "向下", phrase: "moving downward 向下移动", cat: "燃烧换气" },
+  { en: "turbulence", pos: "n.", ipa: "/ˈtɜːrbjələns/", hom: "特-比尤-勒斯", zh: "涡流；湍流", phrase: "air turbulence in the cylinder", cat: "燃烧换气" },
+  { en: "expel", pos: "v.", ipa: "/ɪkˈspel/", hom: "伊克-斯-佩尔", zh: "排出", phrase: "expel the burnt gases", cat: "燃烧换气" },
+  { en: "cut-off", pos: "n.", ipa: "/ˈkʌt ɔːf/", hom: "卡特-奥夫", zh: "切断（供油）", phrase: "fuel cut-off", cat: "燃烧换气" },
+  { en: "long stroke", pos: "n.", ipa: "/lɔːŋ stroʊk/", hom: "朗 · 斯-戳克", zh: "长冲程", phrase: "long stroke low speed engine", cat: "燃烧换气" },
+  { en: "stroke-to-bore ratio", pos: "n.", ipa: "/stroʊk tə bɔːr ˈreɪʃioʊ/", hom: "斯-戳克 · 图 · 波尔 · 瑞-秀", zh: "行程缸径比", phrase: "large stroke-to-bore ratio", cat: "燃烧换气" },
+  { en: "pulse type turbocharging", pos: "n.", ipa: "/pʌls taɪp ˈtɜːrboʊtʃɑːrdʒɪŋ/", hom: "帕尔斯 · 泰普 · 特-波-查-京", zh: "脉冲式增压", phrase: "pulse type turbocharging system", cat: "燃烧换气" },
+  { en: "constant pressure turbocharging", pos: "n.", ipa: "/ˈkɑːnstənt ˈpreʃər ˈtɜːrboʊtʃɑːrdʒɪŋ/", hom: "康-斯滕特 · 普雷-瑟 · 特-波-查-京", zh: "定压增压", phrase: "constant pressure turbocharging system", cat: "燃烧换气" },
+  { en: "multi exhaust pipe", pos: "n.", ipa: "/ˈmʌlti ɪɡˈzɔːst paɪp/", hom: "马-提 · 伊格-造斯特 · 派普", zh: "多根排气管", phrase: "multi exhaust pipes of pulse system", cat: "燃烧换气" },
+  { en: "blade", pos: "n.", ipa: "/bleɪd/", hom: "布-莱德", zh: "叶片", phrase: "blade temperature 叶片温度", cat: "燃烧换气" },
+  { en: "impeller", pos: "n.", ipa: "/ɪmˈpelər/", hom: "伊姆-佩-勒", zh: "叶轮", phrase: "compressor impeller", cat: "燃烧换气" },
+  { en: "diffuser", pos: "n.", ipa: "/dɪˈfjuːzər/", hom: "迪-菲尤-泽", zh: "扩压器", phrase: "diffuser ring", cat: "燃烧换气" },
+  { en: "volute casing", pos: "n.", ipa: "/vəˈluːt ˈkeɪsɪŋ/", hom: "沃-鲁特 · 凯-辛", zh: "涡壳", phrase: "turbine volute casing", cat: "燃烧换气" },
+  { en: "fine spray", pos: "n.", ipa: "/faɪn spreɪ/", hom: "法恩 · 斯-普瑞", zh: "细雾（细油雾）", phrase: "fine spray of fuel", cat: "燃烧换气" },
+  { en: "sweep out", pos: "v.", ipa: "/swiːp aʊt/", hom: "斯-维普 · 奥特", zh: "扫出；清扫", phrase: "sweep out the burnt gases", cat: "燃烧换气" },
+  { en: "muffler", pos: "n.", ipa: "/ˈmʌflər/", hom: "马夫-勒", zh: "消声器", phrase: "muffler / silencer", cat: "燃烧换气" },
+  { en: "noise", pos: "n.", ipa: "/nɔɪz/", hom: "诺伊兹", zh: "噪声", phrase: "noise level in the engine room", cat: "燃烧换气" },
+  { en: "fin", pos: "n.", ipa: "/fɪn/", hom: "芬", zh: "肋片；翅片", phrase: "fins increase the heat transfer surface area", cat: "燃烧换气" },
+  { en: "heat transfer", pos: "n.", ipa: "/hiːt ˈtrænsfər/", hom: "希特 · 川斯-弗", zh: "传热", phrase: "heat transfer surface", cat: "燃烧换气" },
+  { en: "surface area", pos: "n.", ipa: "/ˈsɜːrfɪs ˈeriə/", hom: "瑟-菲斯 · 艾-瑞-额", zh: "表面积", phrase: "heat transfer surface area", cat: "燃烧换气" },
+  { en: "cylinder condition", pos: "n.", ipa: "/ˈsɪlɪndər kənˈdɪʃn/", hom: "西-林-德 · 肯-迪-申", zh: "气缸工况", phrase: "cylinder conditions at injection", cat: "燃烧换气" },
+  { en: "fill with", pos: "v.", ipa: "/fɪl wɪð/", hom: "菲-尔 · 维斯", zh: "充注；充满", phrase: "the cylinder is filled with air", cat: "燃烧换气" },
+  { en: "oil fog", pos: "n.", ipa: "/ɔɪl fɔːɡ/", hom: "奥伊尔 · 福格", zh: "油雾", phrase: "oil fog lubrication", cat: "燃烧换气" },
+  { en: "naturally aspirated", pos: "adj.", ipa: "/ˈnætʃrəli ˈæspəreɪtɪd/", hom: "纳-扯-惹-利 · 艾-斯-普-瑞-提德", zh: "自然吸气的", phrase: "naturally aspirated diesel engine", cat: "燃烧换气" },
+  { en: "charge", pos: "n.", ipa: "/tʃɑːrdʒ/", hom: "查吉", zh: "充量", phrase: "air charge, scavenging charge", cat: "燃烧换气" },
+  { en: "loss", pos: "n.", ipa: "/lɔːs/", hom: "劳斯", zh: "损失", phrase: "scavenging loss, pressure loss", cat: "燃烧换气" },
+  { en: "blow-by", pos: "n.", ipa: "/ˈbloʊbaɪ/", hom: "布娄-拜", zh: "窜气", phrase: "blow-by of the piston rings", cat: "燃烧换气" },
+  { en: "uniflow", pos: "n.", ipa: "/ˈjuːnɪfloʊ/", hom: "尤-尼-弗娄", zh: "直流扫气", phrase: "uniflow scavenging", cat: "燃烧换气" },
+  { en: "cross-flow", pos: "n.", ipa: "/ˈkrɔːsfloʊ/", hom: "克-罗斯-弗娄", zh: "横流扫气", phrase: "cross-flow scavenging", cat: "燃烧换气" },
+  { en: "return-flow", pos: "n.", ipa: "/rɪˈtɜːrnfloʊ/", hom: "瑞-特恩-弗娄", zh: "回流扫气", phrase: "return-flow scavenging", cat: "燃烧换气" },
+  { en: "auxiliary blower", pos: "n.", ipa: "/ɔːɡˈzɪliəri ˈbloʊər/", hom: "奥格-齐-里-额-瑞 · 布洛-尔", zh: "辅助鼓风机", phrase: "auxiliary blower in the scavenge air duct", cat: "燃烧换气" },
+  { en: "supercharged diesel engine", pos: "n.", ipa: "/ˈsuːpərtʃɑːrdʒd ˈdiːzl ˈendʒɪn/", hom: "苏-泼-查吉德 · 迪-则尔 · 恩-金", zh: "增压柴油机", phrase: "supercharged diesel engine output", cat: "燃烧换气" },
+  { en: "fuel/air mixing", pos: "n.", ipa: "/ˈfjuːəl er ˈmɪksɪŋ/", hom: "菲尤-尔 · 艾尔 · 米克-辛", zh: "油气混合", phrase: "complete fuel/air mixing", cat: "燃烧换气" },
+  { en: "rotate", pos: "v.", ipa: "/ˈroʊteɪt/", hom: "若-泰特", zh: "旋转", phrase: "the crankshaft rotates", cat: "燃烧换气" },
+  { en: "rotation", pos: "n.", ipa: "/roʊˈteɪʃn/", hom: "若-泰-申", zh: "旋转", phrase: "direction of rotation", cat: "燃烧换气" },
+
+  // ── 三、燃油、滑油与水系统 ───────────────────────
+  { en: "heavy fuel oil (HFO)", pos: "n.", ipa: "/ˈhevi ˈfjuːəl ɔɪl/", hom: "海-维 · 菲尤-尔 · 奥伊尔", zh: "重油", phrase: "HFO treatment system", cat: "油与水" },
+  { en: "viscosity", pos: "n.", ipa: "/vɪˈskɑːsəti/", hom: "维斯-卡-瑟-提", zh: "粘度", phrase: "viscosity control unit", cat: "油与水" },
+  { en: "purifier", pos: "n.", ipa: "/ˈpjʊrɪfaɪər/", hom: "漂-瑞-法-尔", zh: "分油机", phrase: "fuel oil purifier, purifying temperature", cat: "油与水" },
+  { en: "settling tank", pos: "n.", ipa: "/ˈsetlɪŋ tæŋk/", hom: "塞-特令 · 坦克", zh: "沉淀柜", phrase: "settling tank and service tank", cat: "油与水" },
+  { en: "lubrication", pos: "n.", ipa: "/ˌluːbrɪˈkeɪʃən/", hom: "卢-布瑞-凯-申", zh: "润滑", phrase: "forced lubrication system", cat: "油与水" },
+  { en: "sump tank", pos: "n.", ipa: "/sʌmp tæŋk/", hom: "桑普 · 坦克", zh: "循环柜", phrase: "lubricating oil sump tank", cat: "油与水" },
+  { en: "cooling water", pos: "n.", ipa: "/ˈkuːlɪŋ ˈwɔːtər/", hom: "库-令 · 沃-特", zh: "冷却水", phrase: "sea water / fresh water cooling", cat: "油与水" },
+  { en: "heat exchanger", pos: "n.", ipa: "/hiːt ɪksˈtʃeɪndʒər/", hom: "希特 · 伊克斯-钱-哲", zh: "热交换器", phrase: "shell and tube heat exchanger", cat: "油与水" },
+  { en: "cooler", pos: "n.", ipa: "/ˈkuːlər/", hom: "库-勒", zh: "冷却器", phrase: "lubricating oil cooler, air cooler", cat: "油与水" },
+  { en: "fresh water generator", pos: "n.", ipa: "/freʃ ˈwɔːtər ˈdʒenəreɪtər/", hom: "弗莱什 · 沃-特 · 杰-呢-瑞-特", zh: "造水机", phrase: "vacuum fresh water generator", cat: "油与水" },
+  { en: "heat", pos: "n.", ipa: "/hiːt/", hom: "希特", zh: "热；热量", phrase: "heat exchanger 热交换器", cat: "油与水" },
+  { en: "exchanger", pos: "n.", ipa: "/ɪksˈtʃeɪndʒər/", hom: "伊克斯-钱-哲", zh: "交换器", phrase: "shell and tube exchanger", cat: "油与水" },
+  { en: "seawater", pos: "n.", ipa: "/ˈsiːwɔːtər/", hom: "西-沃-特", zh: "海水", phrase: "sea water cooling system", cat: "油与水" },
+  { en: "fresh water", pos: "n.", ipa: "/freʃ ˈwɔːtər/", hom: "弗莱什 · 沃-特", zh: "淡水", phrase: "fresh water cooling", cat: "油与水" },
+  { en: "fuel", pos: "n.", ipa: "/ˈfjuːəl/", hom: "菲尤-尔", zh: "燃料", phrase: "fuel oil system", cat: "油与水" },
+  { en: "grade of oil", pos: "n.", ipa: "/ɡreɪd əv ɔɪl/", hom: "格瑞德 · 奥夫 · 奥伊尔", zh: "油的牌号（等级）", phrase: "the grade of oil used", cat: "油与水" },
+  { en: "total loss system", pos: "n.", ipa: "/ˈtoʊtl lɔːs ˈsɪstəm/", hom: "托-特 · 劳斯 · 西斯-腾", zh: "全损耗（消耗式）润滑系统", phrase: "total loss lubrication system", cat: "油与水" },
+  { en: "circulating system", pos: "n.", ipa: "/ˈsɜːrkjəleɪtɪŋ ˈsɪstəm/", hom: "瑟-丘-莱-听 · 西斯-腾", zh: "循环（润滑）系统", phrase: "circulating lubrication system", cat: "油与水" },
+
+  // ── 四、辅机与管系 ───────────────────────────────
+  { en: "boiler", pos: "n.", ipa: "/ˈbɔɪlər/", hom: "波伊-勒", zh: "锅炉", phrase: "auxiliary boiler, steam pressure", cat: "辅机管系" },
+  { en: "feed water", pos: "n.", ipa: "/fiːd ˈwɔːtər/", hom: "菲德 · 沃-特", zh: "给水", phrase: "feed water pump, feed water treatment", cat: "辅机管系" },
+  { en: "air compressor", pos: "n.", ipa: "/er kəmˈpresər/", hom: "艾尔 · 肯-普雷-瑟", zh: "空压机", phrase: "starting air compressor", cat: "辅机管系" },
+  { en: "air bottle", pos: "n.", ipa: "/er ˈbɑːtl/", hom: "艾尔 · 巴-特", zh: "空气瓶", phrase: "starting air bottle, drain the air bottle", cat: "辅机管系" },
+  { en: "centrifugal pump", pos: "n.", ipa: "/senˈtrɪfjʊɡəl pʌmp/", hom: "森-特瑞-弗尤-勾 · 帕姆普", zh: "离心泵", phrase: "centrifugal pump priming", cat: "辅机管系" },
+  { en: "reciprocating pump", pos: "n.", ipa: "/rɪˈsɪprəkeɪtɪŋ pʌmp/", hom: "瑞-西-普若-凯-听 · 帕姆普", zh: "往复泵", phrase: "reciprocating pump valve", cat: "辅机管系" },
+  { en: "valve", pos: "n.", ipa: "/vælv/", hom: "外尔夫", zh: "阀", phrase: "suction / discharge valve, quick closing valve", cat: "辅机管系" },
+  { en: "pipeline", pos: "n.", ipa: "/ˈpaɪplaɪn/", hom: "派普-莱恩", zh: "管路", phrase: "bilge pipeline, ballast pipeline", cat: "辅机管系" },
+  { en: "steering gear", pos: "n.", ipa: "/ˈstɪrɪŋ ɡɪr/", hom: "斯-提尔-令 · 吉尔", zh: "舵机", phrase: "steering gear test before departure", cat: "辅机管系" },
+  { en: "incinerator", pos: "n.", ipa: "/ɪnˈsɪnəreɪtər/", hom: "因-西-呢-瑞-特", zh: "焚烧炉", phrase: "sludge incinerator", cat: "辅机管系" },
+  { en: "separator", pos: "n.", ipa: "/ˈsepəreɪtər/", hom: "塞-普-瑞-特", zh: "分离器", phrase: "oil separator", cat: "辅机管系" },
+  { en: "compressor", pos: "n.", ipa: "/kəmˈpresər/", hom: "肯-普雷-瑟", zh: "压缩机", phrase: "air compressor, refrigeration compressor", cat: "辅机管系" },
+  { en: "evaporator", pos: "n.", ipa: "/ɪˈvæpəreɪtər/", hom: "伊-万-普-瑞-特", zh: "蒸发器", phrase: "vacuum evaporator", cat: "辅机管系" },
+  { en: "sensor", pos: "n.", ipa: "/ˈsensər/", hom: "森-瑟", zh: "传感器", phrase: "pressure sensor, temperature sensor", cat: "辅机管系" },
+  { en: "bypass", pos: "n./v.", ipa: "/ˈbaɪpæs/", hom: "拜-帕斯", zh: "旁通（阀）", phrase: "bypass valve, bypass the filter", cat: "辅机管系" },
+  { en: "check valve", pos: "n.", ipa: "/tʃek vælv/", hom: "切克 · 外尔夫", zh: "止回阀", phrase: "non-return check valve", cat: "辅机管系" },
+  { en: "starting air", pos: "n.", ipa: "/ˈstɑːrtɪŋ er/", hom: "斯-塔-听 · 艾尔", zh: "起动空气", phrase: "starting air system", cat: "辅机管系" },
+  { en: "air receiver", pos: "n.", ipa: "/er rɪˈsiːvər/", hom: "艾尔 · 瑞-西-沃", zh: "空气瓶（储气筒）", phrase: "starting air receiver", cat: "辅机管系" },
+  { en: "pilot air", pos: "n.", ipa: "/ˈpaɪlət er/", hom: "派-勒特 · 艾尔", zh: "控制（先导）空气", phrase: "pilot air for the starting valve", cat: "辅机管系" },
+  { en: "air distributor", pos: "n.", ipa: "/er dɪˈstrɪbjətər/", hom: "艾尔 · 迪-斯-吹-比尤-特", zh: "空气分配器", phrase: "starting air distributor", cat: "辅机管系" },
+  { en: "frequent drain", pos: "n.", ipa: "/ˈfriːkwənt dreɪn/", hom: "弗瑞-昆特 · 德瑞恩", zh: "频繁放残", phrase: "frequent drain of the air bottle", cat: "辅机管系" },
+  { en: "routine maintenance", pos: "n.", ipa: "/ruːˈtiːn ˈmeɪntənəns/", hom: "鲁-提恩 · 门-特-嫩斯", zh: "日常维护", phrase: "routine maintenance and repair", cat: "辅机管系" },
+  { en: "interlock", pos: "n.", ipa: "/ˈɪntərlɑːk/", hom: "因-特-洛克", zh: "联锁（装置）", phrase: "safety interlock", cat: "辅机管系" },
+  { en: "abnormal condition", pos: "n.", ipa: "/æbˈnɔːrml kənˈdɪʃn/", hom: "艾布-诺-么 · 肯-迪-申", zh: "异常工况", phrase: "abnormal operating condition", cat: "辅机管系" },
+  { en: "emergency condition", pos: "n.", ipa: "/ɪˈmɜːrdʒənsi kənˈdɪʃn/", hom: "伊-么-金-西 · 肯-迪-申", zh: "应急工况", phrase: "emergency conditions at sea", cat: "辅机管系" },
+  { en: "small bore pipe", pos: "n.", ipa: "/smɔːl bɔːr paɪp/", hom: "斯-莫尔 · 波尔 · 派普", zh: "小口径管", phrase: "small bore pipes for control air", cat: "辅机管系" },
+  { en: "large volume manifold", pos: "n.", ipa: "/lɑːrdʒ ˈvɑːljuːm ˈmænɪfoʊld/", hom: "拉吉 · 万-柳姆 · 曼-尼-佛德", zh: "大容量总管", phrase: "large volume air manifold", cat: "辅机管系" },
+  { en: "casing", pos: "n.", ipa: "/ˈkeɪsɪŋ/", hom: "凯-辛", zh: "机壳；外壳", phrase: "compressor casing, pump casing", cat: "辅机管系" },
+  { en: "leak", pos: "n./v.", ipa: "/liːk/", hom: "利克", zh: "泄漏", phrase: "leak in the pipe line", cat: "辅机管系" },
+  { en: "velocity", pos: "n.", ipa: "/vəˈlɑːsəti/", hom: "沃-拉-瑟-提", zh: "速度（流速）", phrase: "velocity of the air flow", cat: "辅机管系" },
+  { en: "pump", pos: "n.", ipa: "/pʌmp/", hom: "帕姆普", zh: "泵", phrase: "pump casing, pump suction", cat: "辅机管系" },
+  { en: "throttle", pos: "v./n.", ipa: "/ˈθrɑːtl/", hom: "斯-若-特", zh: "节流；节气", phrase: "throttling the valve 节流的阀", cat: "辅机管系" },
+  { en: "deliver", pos: "v.", ipa: "/dɪˈlɪvər/", hom: "迪-利-沃", zh: "输送；排出", phrase: "deliver the oil to the bearing", cat: "辅机管系" },
+
+  // ── 五、电气、自动化、防污染与值班 ───────────────
+  { en: "alternator", pos: "n.", ipa: "/ˈɔːltərneɪtər/", hom: "奥-特-内-特", zh: "交流发电机", phrase: "alternator parallel operation", cat: "电气防污" },
+  { en: "switchboard", pos: "n.", ipa: "/ˈswɪtʃbɔːrd/", hom: "斯维奇-波德", zh: "配电板", phrase: "main switchboard, earth fault", cat: "电气防污" },
+  { en: "circuit breaker", pos: "n.", ipa: "/ˈsɜːrkɪt ˈbreɪkər/", hom: "瑟-基特 · 布雷-克", zh: "断路器", phrase: "tripped circuit breaker", cat: "电气防污" },
+  { en: "automation", pos: "n.", ipa: "/ˌɔːtəˈmeɪʃən/", hom: "奥-特-梅-申", zh: "自动化", phrase: "unmanned machinery space (UMS)", cat: "电气防污" },
+  { en: "alarm system", pos: "n.", ipa: "/əˈlɑːrm ˈsɪstəm/", hom: "额-拉姆 · 西斯-腾", zh: "报警系统", phrase: "alarm and monitoring system", cat: "电气防污" },
+  { en: "oily water separator", pos: "n.", ipa: "/ˈɔɪli ˈwɔːtər ˈsepəreɪtər/", hom: "奥伊-利 · 沃-特 · 塞-普-瑞-特", zh: "油水分离器", phrase: "15 ppm alarm of OWS", cat: "电气防污" },
+  { en: "sewage treatment plant", pos: "n.", ipa: "/ˈsuːɪdʒ ˈtriːtmənt plænt/", hom: "苏-伊吉 · 吹特-门特 · 普兰特", zh: "生活污水处理装置", phrase: "sewage discharge regulations", cat: "电气防污" },
+  { en: "bilge", pos: "n.", ipa: "/bɪldʒ/", hom: "比尔吉", zh: "舱底（污水）", phrase: "bilge water, bilge pumping", cat: "电气防污" },
+  { en: "standby", pos: "n./v.", ipa: "/ˈstændbaɪ/", hom: "斯坦德-拜", zh: "备车", phrase: "standby engine, ring off standby", cat: "电气防污" },
+  { en: "logbook", pos: "n.", ipa: "/ˈlɔːɡbʊk/", hom: "劳格-布克", zh: "日志", phrase: "oil record book, engine room logbook", cat: "电气防污" },
+  { en: "electric propulsion", pos: "n.", ipa: "/ɪˈlektrɪk prəˈpʌlʃn/", hom: "伊-莱克-吹克 · 普若-帕尔-申", zh: "电力推进（装置）", phrase: "electric propulsion system", cat: "电气防污" },
+  { en: "parallel operation", pos: "n.", ipa: "/ˈpærəlel ˌɑːpəˈreɪʃn/", hom: "帕-若-莱尔 · 奥-普-瑞-申", zh: "并联运行", phrase: "alternators in parallel operation", cat: "电气防污" },
+  { en: "hydraulic power supply unit", pos: "n.", ipa: "/haɪˈdrɔːlɪk ˈpaʊər səˈplaɪ ˈjuːnɪt/", hom: "海-卓-利克 · 泡-尔 · 瑟-普赖 · 尤-尼特", zh: "液压动力供给单元（HPSU）", phrase: "HPSU of the ME engine", cat: "电气防污" },
+  { en: "electronically controlled engine", pos: "n.", ipa: "/ɪˌlekˈtrɑːnɪkli kənˈtroʊld ˈendʒɪn/", hom: "伊-莱克-戳-尼-克-利 · 肯-戳-德 · 恩-金", zh: "电控发动机", phrase: "electronically controlled ME engine 电控 ME 柴油机", cat: "电气防污" },
+
+  // ── 六、调速与自动控制 ───────────────────────────
+  { en: "governor", pos: "n.", ipa: "/ˈɡʌvərnər/", hom: "嘎-沃-纳", zh: "调速器", phrase: "hydraulic governor, speed droop", cat: "调速控制" },
+  { en: "speed droop", pos: "n.", ipa: "/spiːd druːp/", hom: "斯-皮德 · 德鲁普", zh: "速度降（调差率）", phrase: "speed droop of the governor", cat: "调速控制" },
+  { en: "modulate", pos: "v.", ipa: "/ˈmɑːdʒəleɪt/", hom: "马-朱-莱特", zh: "调节", phrase: "modulate the fuel supply", cat: "调速控制" },
+  { en: "regulate", pos: "v.", ipa: "/ˈreɡjuleɪt/", hom: "瑞-勾-莱特", zh: "调节；调整", phrase: "regulate the engine speed", cat: "调速控制" },
+  { en: "automatically", pos: "adv.", ipa: "/ˌɔːtəˈmætɪkli/", hom: "奥-特-马-提克-利", zh: "自动地", phrase: "automatically controlled", cat: "调速控制" },
+  { en: "fuel setting", pos: "n.", ipa: "/ˈfjuːəl ˈsetɪŋ/", hom: "菲尤-尔 · 塞-听", zh: "燃油设定（机构）", phrase: "fuel setting of the governor", cat: "调速控制" },
+  { en: "set speed", pos: "n.", ipa: "/set spiːd/", hom: "塞特 · 斯-皮德", zh: "设定转速", phrase: "the set speed is kept constant", cat: "调速控制" },
+  { en: "solenoid", pos: "n.", ipa: "/ˈsoʊlənɔɪd/", hom: "搜-勒-诺伊德", zh: "电磁线圈；电磁铁", phrase: "solenoid valve", cat: "调速控制" },
+  { en: "secure", pos: "v.", ipa: "/sɪˈkjʊr/", hom: "西-丘尔", zh: "切断；停车（停用）", phrase: "secure the engine 停车", cat: "调速控制" },
+  { en: "restore", pos: "v.", ipa: "/rɪˈstɔːr/", hom: "瑞-斯-托尔", zh: "恢复", phrase: "restore the original value", cat: "调速控制" },
+  { en: "desired value", pos: "n.", ipa: "/dɪˈzaɪərd ˈvæljuː/", hom: "迪-宰-厄德 · 万-柳", zh: "期望值（给定值）", phrase: "original desired value 原定期望值", cat: "调速控制" },
+  { en: "correct value", pos: "n.", ipa: "/kəˈrekt ˈvæljuː/", hom: "克-瑞克特 · 万-柳", zh: "正确值", phrase: "compare with the correct value", cat: "调速控制" },
+  { en: "appropriate", pos: "adj.", ipa: "/əˈproʊpriət/", hom: "额-普若-普瑞-厄特", zh: "合适的", phrase: "appropriate fuel setting", cat: "调速控制" },
+  { en: "fuel limiter", pos: "n.", ipa: "/ˈfjuːəl ˈlɪmɪtər/", hom: "菲尤-尔 · 利-米-特", zh: "燃油限制器", phrase: "fuel limiter of the governor", cat: "调速控制" },
+  { en: "sense", pos: "v.", ipa: "/sens/", hom: "森斯", zh: "感知；检测", phrase: "sense the engine speed", cat: "调速控制" },
+  { en: "generator engine", pos: "n.", ipa: "/ˈdʒenəreɪtər ˈendʒɪn/", hom: "杰-呢-瑞-特 · 恩-金", zh: "发电柴油机", phrase: "generator engine governor", cat: "调速控制" },
+  { en: "constant speed", pos: "n.", ipa: "/ˈkɑːnstənt spiːd/", hom: "康-斯滕特 · 斯-皮德", zh: "恒速", phrase: "nearly constant speed 近乎恒速", cat: "调速控制" },
+  { en: "primary task", pos: "n.", ipa: "/ˈpraɪmeri tæsk/", hom: "普赖-么-瑞 · 塔斯克", zh: "主要任务", phrase: "the primary task of the governor", cat: "调速控制" },
+  { en: "characteristic", pos: "n.", ipa: "/ˌkæriktəˈrɪstɪk/", hom: "开-瑞克-特-瑞斯-提克", zh: "特性（曲线）", phrase: "governor characteristic", cat: "调速控制" },
+  { en: "output speed", pos: "n.", ipa: "/ˈaʊtpʊt spiːd/", hom: "奥特-普特 · 斯-皮德", zh: "输出转速", phrase: "output speed of the engine", cat: "调速控制" },
+  { en: "flyweight", pos: "n.", ipa: "/ˈflaɪweɪt/", hom: "弗赖-维特", zh: "飞重（飞铁）", phrase: "flyweights = rotating weights", cat: "调速控制" },
+  { en: "direct acting", pos: "adj.", ipa: "/dəˈrekt ˈæktɪŋ/", hom: "德-瑞克特 · 艾克-听", zh: "直接作用式的", phrase: "direct acting governor", cat: "调速控制" },
+  { en: "servomotor", pos: "n.", ipa: "/ˈsɜːrvoʊmoʊtər/", hom: "瑟-沃-莫-特", zh: "伺服马达（执行机构）", phrase: "servomotor action", cat: "调速控制" },
+  { en: "centrifugal force", pos: "n.", ipa: "/ˌsentrɪˈfjuːɡl fɔːrs/", hom: "森-吹-弗尤-勾 · 福斯", zh: "离心力", phrase: "centrifugal force of the flyweights", cat: "调速控制" },
+  { en: "load sharing", pos: "n.", ipa: "/loʊd ˈʃerɪŋ/", hom: "娄德 · 谢-令", zh: "负荷分配", phrase: "load sharing relationship", cat: "调速控制" },
+  { en: "fluctuation", pos: "n.", ipa: "/ˌflʌktʃuˈeɪʃn/", hom: "弗拉克-丘-埃-申", zh: "波动", phrase: "speed fluctuation", cat: "调速控制" },
+  { en: "stability", pos: "n.", ipa: "/stəˈbɪləti/", hom: "斯-特-比-勒-提", zh: "稳定性", phrase: "stability of the governor", cat: "调速控制" },
+  { en: "sensitivity", pos: "n.", ipa: "/ˌsensəˈtɪvəti/", hom: "森-瑟-提-沃-提", zh: "灵敏性", phrase: "sensitivity of the governor", cat: "调速控制" },
+  { en: "promptness", pos: "n.", ipa: "/ˈprɑːmptnəs/", hom: "普若姆普特-尼斯", zh: "快速性", phrase: "promptness of regulation", cat: "调速控制" },
+  { en: "wide load range", pos: "n.", ipa: "/waɪd loʊd reɪndʒ/", hom: "外德 · 娄德 · 瑞恩吉", zh: "宽广的负荷范围", phrase: "work over a wide load range", cat: "调速控制" },
+  { en: "at all loads", pos: "phr.", ipa: "/æt ɔːl loʊdz/", hom: "艾特 · 奥尔 · 娄兹", zh: "在所有负荷下", phrase: "constant speed at all loads", cat: "调速控制" },
+  { en: "regardless of load changes", pos: "phr.", ipa: "/rɪˈɡɑːrdləs əv loʊd ˈtʃeɪndʒɪz/", hom: "瑞-嘎德-勒斯 · 奥夫 · 娄德 · 钱-吉兹", zh: "不管负荷如何变化", phrase: "regardless of load changes", cat: "调速控制" },
+
+  // ── 七、船舶与通用词 ─────────────────────────────
+  { en: "captain", pos: "n.", ipa: "/ˈkæptɪn/", hom: "开普-腾", zh: "船长", phrase: "the captain of the vessel", cat: "船舶与通用" },
+  { en: "container ship", pos: "n.", ipa: "/kənˈteɪnər ʃɪp/", hom: "肯-泰-纳 · 希普", zh: "集装箱船", phrase: "large container ship", cat: "船舶与通用" },
+  { en: "vessel", pos: "n.", ipa: "/ˈvesl/", hom: "外-搜", zh: "船；船舶", phrase: "merchant vessel", cat: "船舶与通用" },
+  { en: "ro-ro ship", pos: "n.", ipa: "/ˈroʊroʊ ʃɪp/", hom: "若-若 · 希普", zh: "滚装船", phrase: "ro-ro (roll-on / roll-off) ship", cat: "船舶与通用" },
+  { en: "bulk carrier", pos: "n.", ipa: "/bʌlk ˈkæriər/", hom: "巴尔克 · 开-瑞-厄", zh: "散货船", phrase: "bulk carrier cargo hold", cat: "船舶与通用" },
+  { en: "barge", pos: "n.", ipa: "/bɑːrdʒ/", hom: "巴吉", zh: "驳船", phrase: "dumb barge", cat: "船舶与通用" },
+  { en: "tanker", pos: "n.", ipa: "/ˈtæŋkər/", hom: "坦克-尔", zh: "油轮", phrase: "crude oil tanker", cat: "船舶与通用" },
+  { en: "cargo ship", pos: "n.", ipa: "/ˈkɑːrɡoʊ ʃɪp/", hom: "卡-勾 · 希普", zh: "货船", phrase: "general cargo ship", cat: "船舶与通用" },
+  { en: "merchant vessel", pos: "n.", ipa: "/ˈmɜːrtʃənt ˈvesl/", hom: "么-钱特 · 外-搜", zh: "商船", phrase: "merchant vessel crew", cat: "船舶与通用" },
+  { en: "tug", pos: "n.", ipa: "/tʌɡ/", hom: "塔格", zh: "拖船", phrase: "tug boat", cat: "船舶与通用" },
+  { en: "ferry", pos: "n.", ipa: "/ˈferi/", hom: "费-瑞", zh: "渡船", phrase: "passenger ferry", cat: "船舶与通用" },
+  { en: "hull form", pos: "n.", ipa: "/hʌl fɔːrm/", hom: "哈尔 · 福姆", zh: "船体型线；船体形状", phrase: "hull form of the vessel（笔记里的 hull formation 应为此词）", cat: "船舶与通用" },
+  { en: "propulsion", pos: "n.", ipa: "/prəˈpʌlʃn/", hom: "普若-帕尔-申", zh: "推进", phrase: "propulsion plant 推进装置", cat: "船舶与通用" },
+  { en: "revolution", pos: "n.", ipa: "/ˌrevəˈluːʃn/", hom: "瑞-沃-鲁-申", zh: "转；回转", phrase: "once every two crankshaft revolutions 曲轴每两转一次", cat: "船舶与通用" },
+  { en: "twice", pos: "adv.", ipa: "/twaɪs/", hom: "特-外斯", zh: "两次；两倍", phrase: "twice per revolution", cat: "船舶与通用" },
+  { en: "half", pos: "n./adv.", ipa: "/hæf/", hom: "哈夫", zh: "一半", phrase: "half of the exhaust gas", cat: "船舶与通用" },
+  { en: "create", pos: "v.", ipa: "/kriˈeɪt/", hom: "克瑞-埃特", zh: "创造；产生", phrase: "created by the rotation", cat: "船舶与通用" },
+  { en: "drive", pos: "v.", ipa: "/draɪv/", hom: "德赖夫", zh: "驱动（driven 被驱动的）", phrase: "driven by the main engine", cat: "船舶与通用" },
+  { en: "constant", pos: "adj./n.", ipa: "/ˈkɑːnstənt/", hom: "康-斯滕特", zh: "恒定的；常量", phrase: "constant pressure 定压", cat: "船舶与通用" },
+  { en: "decrease", pos: "v./n.", ipa: "/dɪˈkriːs/", hom: "迪-克里斯", zh: "减少；下降", phrase: "decrease the fuel supply", cat: "船舶与通用" },
+  { en: "density", pos: "n.", ipa: "/ˈdensəti/", hom: "登-瑟-提", zh: "密度", phrase: "density of the air charge", cat: "船舶与通用" },
+  { en: "load", pos: "n./v.", ipa: "/loʊd/", hom: "娄德", zh: "负荷；装载", phrase: "full load, part load", cat: "船舶与通用" },
+  { en: "term", pos: "n.", ipa: "/tɜːrm/", hom: "特姆", zh: "术语；项", phrase: "the term means ...", cat: "船舶与通用" },
+  { en: "force out of", pos: "phr.", ipa: "/fɔːrs aʊt əv/", hom: "福斯 · 奥特 · 奥夫", zh: "迫使……排出", phrase: "force the gases out of the cylinder", cat: "船舶与通用" },
+  { en: "directly proportional to", pos: "phr.", ipa: "/dəˈrektli prəˈpɔːrʃənl tə/", hom: "德-瑞克特-利 · 普若-波-申-诺 · 图", zh: "与……成正比", phrase: "directly proportional to the load", cat: "船舶与通用" },
+  { en: "inversely proportional to", pos: "phr.", ipa: "/ɪnˈvɜːrsli prəˈpɔːrʃənl tə/", hom: "因-沃-斯-利 · 普若-波-申-诺 · 图", zh: "与……成反比", phrase: "inversely proportional to the pressure", cat: "船舶与通用" },
+  { en: "install", pos: "v.", ipa: "/ɪnˈstɔːl/", hom: "因-斯-托尔", zh: "安装", phrase: "installed on the bedplate", cat: "船舶与通用" },
+  { en: "improve", pos: "v.", ipa: "/ɪmˈpruːv/", hom: "伊姆-普如夫", zh: "改善；提高", phrase: "improve the combustion", cat: "船舶与通用" },
+  { en: "performance", pos: "n.", ipa: "/pərˈfɔːrməns/", hom: "泼-福-门斯", zh: "性能；表现", phrase: "engine performance", cat: "船舶与通用" },
+  { en: "reduce", pos: "v.", ipa: "/rɪˈduːs/", hom: "瑞-丢斯", zh: "减少；降低", phrase: "reduce the volume", cat: "船舶与通用" },
+  { en: "volume", pos: "n.", ipa: "/ˈvɑːljuːm/", hom: "万-柳姆", zh: "容积；体积", phrase: "volume of the cylinder", cat: "船舶与通用" },
+  { en: "accomplish", pos: "v.", ipa: "/əˈkɑːmplɪʃ/", hom: "额-康-普利什", zh: "完成", phrase: "accomplish the cycle", cat: "船舶与通用" },
+  { en: "affect", pos: "v.", ipa: "/əˈfekt/", hom: "额-费克特", zh: "影响", phrase: "affect the engine speed", cat: "船舶与通用" },
+  { en: "efficiency", pos: "n.", ipa: "/ɪˈfɪʃnsi/", hom: "伊-菲-申-西", zh: "效率", phrase: "thermal efficiency", cat: "船舶与通用" },
+  { en: "resistance", pos: "n.", ipa: "/rɪˈzɪstəns/", hom: "瑞-齐斯-腾斯", zh: "阻力", phrase: "resistance of the hull", cat: "船舶与通用" },
+  { en: "reliability", pos: "n.", ipa: "/rɪˌlaɪəˈbɪləti/", hom: "瑞-赖-额-比-勒-提", zh: "可靠性", phrase: "long life, lower cost and reliability 寿命长、成本低、可靠", cat: "船舶与通用" },
+  { en: "conventional", pos: "adj.", ipa: "/kənˈvenʃənl/", hom: "肯-文-申-诺", zh: "传统的", phrase: "conventional propulsion", cat: "船舶与通用" },
+  { en: "owing to", pos: "phr.", ipa: "/ˈoʊɪŋ tə/", hom: "欧-应 · 图", zh: "由于", phrase: "owing to its high efficiency", cat: "船舶与通用" },
+  { en: "provide", pos: "v.", ipa: "/prəˈvaɪd/", hom: "普若-外德", zh: "提供", phrase: "provide the required power", cat: "船舶与通用" },
+  { en: "primary", pos: "adj.", ipa: "/ˈpraɪmeri/", hom: "普赖-么-瑞", zh: "主要的；一次的", phrase: "primary task", cat: "船舶与通用" },
+  { en: "directly", pos: "adv.", ipa: "/dəˈrektli/", hom: "德-瑞克特-利", zh: "直接地", phrase: "directly connected to the propeller", cat: "船舶与通用" },
+  { en: "coupled", pos: "adj.", ipa: "/ˈkʌpld/", hom: "卡-剖德", zh: "连接的；耦合的", phrase: "coupled pump 合泵；directly coupled 直连", cat: "船舶与通用" },
+  { en: "working condition", pos: "n.", ipa: "/ˈwɜːrkɪŋ kənˈdɪʃn/", hom: "沃-京 · 肯-迪-申", zh: "工作状况；工况", phrase: "working condition of the engine", cat: "船舶与通用" },
+  { en: "maintenance period", pos: "n.", ipa: "/ˈmeɪntənəns ˈpɪriəd/", hom: "门-特-嫩斯 · 皮-瑞-厄德", zh: "保养周期", phrase: "maintenance period of the engine", cat: "船舶与通用" },
+  { en: "tall", pos: "adj.", ipa: "/tɔːl/", hom: "托尔", zh: "高的", phrase: "a tall cylinder", cat: "船舶与通用" },
+  { en: "distinguish from", pos: "v.", ipa: "/dɪˈstɪŋɡwɪʃ frəm/", hom: "迪-斯-听-古维什 · 弗若姆", zh: "把……与……区分开", phrase: "distinguish A from B", cat: "船舶与通用" },
+  { en: "except", pos: "prep.", ipa: "/ɪkˈsept/", hom: "伊克-塞普特", zh: "除……之外", phrase: "except for the cylinder head", cat: "船舶与通用" },
+  { en: "gas", pos: "n.", ipa: "/ɡæs/", hom: "盖斯", zh: "燃气；气体", phrase: "exhaust gas, scavenge gas", cat: "船舶与通用" },
+  { en: "steam", pos: "n.", ipa: "/stiːm/", hom: "斯-提姆", zh: "蒸汽", phrase: "steam turbine", cat: "船舶与通用" },
+  { en: "necessary", pos: "adj.", ipa: "/ˈnesəseri/", hom: "奈-塞-瑟-瑞", zh: "必要的", phrase: "necessary for the cycle", cat: "船舶与通用" },
+  { en: "ability", pos: "n.", ipa: "/əˈbɪləti/", hom: "额-比-勒-提", zh: "能力", phrase: "ability to work at all loads", cat: "船舶与通用" },
+  { en: "avoid", pos: "v.", ipa: "/əˈvɔɪd/", hom: "额-沃伊德", zh: "避免", phrase: "avoid a loss 避免损失", cat: "船舶与通用" },
+  { en: "leave", pos: "v.", ipa: "/liːv/", hom: "利夫", zh: "离开；留下", phrase: "leave the port", cat: "船舶与通用" },
+  { en: "fit", pos: "v./n.", ipa: "/fɪt/", hom: "菲", zh: "安装；配合", phrase: "fit the new ring", cat: "船舶与通用" },
+  { en: "deal with", pos: "v.", ipa: "/diːl wɪð/", hom: "迪尔 · 维斯", zh: "处理；应付", phrase: "deal with the fault", cat: "船舶与通用" },
+  { en: "replace", pos: "v.", ipa: "/rɪˈpleɪs/", hom: "瑞-普雷斯", zh: "取代；更换", phrase: "replace the worn liner", cat: "船舶与通用" },
+  { en: "operation", pos: "n.", ipa: "/ˌɑːpəˈreɪʃn/", hom: "奥-普-瑞-申", zh: "运行；操作", phrase: "operation of the engine", cat: "船舶与通用" },
+  { en: "sufficient", pos: "adj.", ipa: "/səˈfɪʃnt/", hom: "瑟-菲-申特", zh: "足够的", phrase: "sufficient starting air", cat: "船舶与通用" },
+  { en: "at least", pos: "phr.", ipa: "/æt liːst/", hom: "艾特 · 利斯特", zh: "至少", phrase: "at least 6 starts", cat: "船舶与通用" },
+  { en: "telegraph", pos: "n.", ipa: "/ˈtelɪɡræf/", hom: "泰-利-格瑞夫", zh: "车钟", phrase: "engine room telegraph", cat: "船舶与通用" },
+  { en: "direction handle", pos: "n.", ipa: "/dəˈrekʃn ˈhændl/", hom: "德-瑞克-申 · 汉-斗", zh: "（车钟）方向手柄", phrase: "direction handle of the telegraph", cat: "船舶与通用" },
+  { en: "accordingly", pos: "adv.", ipa: "/əˈkɔːrdɪŋli/", hom: "额-阔-丁-利", zh: "相应地", phrase: "act accordingly", cat: "船舶与通用" },
+  { en: "approach", pos: "v.", ipa: "/əˈproʊtʃ/", hom: "额-普若奇", zh: "接近；临近", phrase: "as TDC is approached", cat: "船舶与通用" },
+  { en: "raise", pos: "v.", ipa: "/reɪz/", hom: "瑞兹", zh: "提高；提升", phrase: "raise the pressure", cat: "船舶与通用" },
+  { en: "relatively", pos: "adv.", ipa: "/ˈrelətɪvli/", hom: "瑞-勒-提夫-利", zh: "相对地", phrase: "relatively small", cat: "船舶与通用" },
+  { en: "vast majority", pos: "n.", ipa: "/væst məˈdʒɑːrəti/", hom: "瓦斯 · 么-佳-若-提", zh: "绝大多数", phrase: "the vast majority of ships", cat: "船舶与通用" },
+  { en: "generous throughflow", pos: "n.", ipa: "/ˈdʒenərəs ˈθruːfloʊ/", hom: "杰-呢-勒斯 · 斯-如-弗娄", zh: "充足的流通（通流面积大）", phrase: "generous through flow area", cat: "船舶与通用" },
+  { en: "vary", pos: "v.", ipa: "/ˈveri/", hom: "外-瑞", zh: "变化", phrase: "varies according to the load", cat: "船舶与通用" },
+  { en: "in order to", pos: "phr.", ipa: "/ɪn ˈɔːrdər tə/", hom: "因 · 奥-德 · 图", zh: "为了", phrase: "in order to increase the charge", cat: "船舶与通用" },
+  { en: "combine with", pos: "v.", ipa: "/kəmˈbaɪn wɪð/", hom: "肯-拜恩 · 维斯", zh: "与……混合；结合", phrase: "combine with the air", cat: "船舶与通用" }
+];
+
+  </script>
+<script>
+(function () {
+  "use strict";
+
+  /* ══════════ 版本与更新日志 ══════════ */
+  /* 测试版：跟正式版是两条线，编号各走各的。
+     正式版现在是 1.9.1，这边从 2.0.0-beta.N 起，一眼能分清装的是哪个。 */
+  const APP_VERSION = "2.0.0-beta.1";
+  const APP_DATE = "2026-11-27";
+  const CHANGELOG = [
+    {
+      v: "2.0.0-beta.1", d: "2026-11-27",
+      add: [
+        "测试版独立出来：进度、词库自加、设置全都另存一份（ship-english-beta-v1），装在一起也不会串",
+        "⚗ 实验台：新功能一个一个挂开关，坏了就关掉，不用退回旧版本",
+        "实验功能①「统计」页：近 14 天背了多少、对错比例、掌握度分布、分类进度、错得最多的词",
+        "实验功能②导出 CSV：整张表带走，Excel / 笔记 / 打印都能用",
+        "实验功能③浅色主题：白天在教室看得清一点",
+        "实验功能④热更看门狗：换上去的页面如果 5 秒还没喘气，自动退回安装包自带的页面（壳层功能）"
+      ],
+      fix: []
+    },
+    {
+      v: "1.9.1", d: "2026-11-27",
+      add: [
+        "更新改成一键：点「更新」之后它自己判断该换页面还是该装包，不用先检查再点下载",
+        "打开 App 如果有新版，顶部直接挂一条横幅，点「更新」就完事",
+        "设置页按 学习 / 朗读与手感 / 数据 / 关于 分了组，更新卡片放到最上面"
+      ],
+      fix: [
+        "以前要「检查更新」→「下载安装包」点两次，中间还得自己判断该点哪个"
+      ]
+    },
+    {
+      v: "1.9.0", d: "2026-11-27",
+      add: [
+        "每日目标改成 1 ~ 100 随便填（以前最少 5 个）",
+        "加了震动反馈：判定对错、选错选项、收藏、翻面、一轮走完，手上能感觉到；⚙ 里可以关",
+        "卡片改手感：点单词＝朗读一遍，看中文点右上角那个「中」——以前是一点就翻面，念不了",
+        "更新日志只摊开最近三版，更早的折起来"
+      ],
+      fix: []
+    },
+    {
+      v: "1.8.2", d: "2026-11-27",
+      add: [
+        "⚙ → 在线更新 多了一个「从文件导入」：选一个 html 文件就能换掉整个页面，不需要网络、不需要账号、不用重装",
+        "底部的小标签从「在线」改成「热更」——不管是在线拉的还是从文件导进来的，只要不是安装包自带的那份，就挂这个标签"
+      ],
+      fix: []
+    },
+    {
+      v: "1.8.1", d: "2026-11-27",
+      add: [
+        "在线更新的验证版：这一版的主要目的就是让你点一次「检查更新」，看着页面自己换成新的",
+        "底部版本号 v1.8.1 旁边会多出一个绿色小标签「在线」—— 有这两个字，说明这个页面是从电脑上下载下来的，不是安装包里自带的；标签没了，说明又退回内置页面了",
+        "⚙ → 在线更新 里同一行也会写明「已在线更新到 1.8.1」"
+      ],
+      fix: [
+        "1.8 装上就闪退（清单里的 provider 类写成了包内可见，系统一启动就报错）—— 那是壳子的问题，跟页面无关"
+      ]
+    },
+    {
+      v: "1.8", d: "2026-11-27",
+      add: [
+        "在线更新：⚙ 里填上电脑的地址（比如 http://172.20.10.6:8099），点「检查更新」就能换词库和新界面，不用再传 APK、不用重装，进度不动",
+        "安装包也能在线下：壳子（安卓那边）真改了才需要，点一下自动下载并叫出系统安装器",
+        "打开软件时安静地看一眼有没有新版，有就提示一句，不打扰"
+      ],
+      fix: []
+    },
+    {
+      v: "1.7", d: "2026-11-27",
+      add: [
+        "词库 50 → 258：把手写笔记里的词全部录进来了，逐条回译核对中文，重复的没再收一遍",
+        "分类拆到第二排单独一行横向滑动，第一排只留四个常用筛：错词 / 收藏 / 全部 / 新词",
+        "错词和收藏挪到最前面，手指一伸就到",
+        "新增两个分类：调速控制、船舶与通用"
+      ],
+      fix: [
+        "词一多，筛选栏和小分类挤成一排看不清（现在两排分开，不再挤）"
+      ]
+    },
+    {
+      v: "1.6", d: "2026-11-27",
+      add: [
+        "卡片右上角加了 ★ 收藏，点一下收进收藏；chips 里的「收藏」能单独看一列",
+        "列表模式加了搜索框，英文 / 中文 / 音标 / 例句都能模糊搜",
+        "发音速度可调（0.6× ~ 1.2×），安卓和网页都生效",
+        "朗读方式可切：手动 / 自动",
+        "今日进度可以清零重来"
+      ],
+      fix: [
+        "打开软件不再自动念第一个词（默认手动，要自动在设置里切）"
+      ]
+    },
+    {
+      v: "1.5", d: "2026-11-27",
+      add: [
+        "卡片左右滑改成翻看上一个 / 下一个词（右滑回到上一个，像翻相册）",
+        "键盘 ← → 也是翻词"
+      ],
+      fix: [
+        "滑动不再被当成「认识 / 不认识」——手一滑就判掉一个词太容易误操作"
+      ]
+    },
+    {
+      v: "1.4", d: "2026-11-27",
+      add: [
+        "底部和设置里都能看到版本号",
+        "更新日志：每个版本加了什么、修了什么，一条条列在这",
+        "升级后第一次打开会提示一句"
+      ],
+      fix: []
+    },
+    {
+      v: "1.3", d: "2026-11-27",
+      add: [
+        "「新词」筛选：只看完全没背过的词",
+        "拼写提示三档：无 / 首字母 / 首字母+长度",
+        "备份导出与恢复（换手机时把进度带走）"
+      ],
+      fix: [
+        "安卓版里「清空进度」点了没反应（WebView 不弹 confirm 对话框）",
+        "安卓版里「导出」下载不出文件（WebView 没有下载器）",
+        "复制备份改成走系统剪贴板，不再依赖浏览器 API"
+      ]
+    },
+    {
+      v: "1.2", d: "2026-11-27",
+      add: [
+        "50 个词全部标注国际音标和中文谐音",
+        "卡片支持左右滑动判定，带跟手和飞出动画",
+        "点一下翻到中文，再点一下翻回英文",
+        "列表里也能看到音标"
+      ],
+      fix: [
+        "列表变长时顶部筛选栏被压成一条线",
+        "翻面时会连着朗读两次",
+        "滑完短时间内点「认识」没反应",
+        "列表里中外两层滚动，滑到一半卡住",
+        "音标长音符 ː 缺字，显示成「ɔ ː」中间有缝",
+        "空格键在翻面状态会被当成「认识」"
+      ]
+    },
+    {
+      v: "1.1", d: "2026-11-27",
+      add: [
+        "安卓版接上系统语音引擎，单词能念出来",
+        "设置里显示朗读状态，带试听"
+      ],
+      fix: [
+        "安卓版点朗读没声音（WebView 里没有 Web Speech 实现）",
+        "Android 11 以上找不到语音引擎（补了 TTS_SERVICE 声明）"
+      ]
+    },
+    {
+      v: "1.0", d: "2026-11-27",
+      add: [
+        "50 个轮机词汇，按教材章节分五类",
+        "卡片 / 选择 / 拼写 / 听音 / 列表 五种模式",
+        "间隔重复：答对往后推 0.5→1→2→4→8→16 天，答错 10 分钟后回来",
+        "筛选、收藏、错词本、自己加词",
+        "电脑独立窗口 + 安卓安装包"
+      ],
+      fix: []
+    }
+  ];
+
+  /* ══════════ 基础 ══════════ */
+  /* 存储键单独一份：测试版跟正式版用同一个手机也不打架 */
+  const KEY = "ship-english-beta-v1";
+  /* 在线更新的默认地址：测试版自己那个仓库，跟正式版互不影响。
+     换了网络就在 ⚙ 里改，存进 st.updateUrl。 */
+  const UPD_DEFAULT = "https://ResionSu4399.github.io/ship-english-beta";
+  const DAY = 86400000;
+  const BOX_DAYS = [0, 0.5, 1, 2, 4, 8, 16];
+  const $ = (s) => document.querySelector(s);
+  const now = () => Date.now();
+
+  function todayStr(d) {
+    const t = d ? new Date(d) : new Date();
+    return t.getFullYear() + "-" + String(t.getMonth() + 1).padStart(2, "0") + "-" + String(t.getDate()).padStart(2, "0");
+  }
+  const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  const shuffle = (a) => { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+  const norm = (s) => String(s || "").toLowerCase().replace(/[()（）]/g, " ").replace(/[^a-z0-9\s-]/g, " ").replace(/\s+/g, " ").trim();
+
+  /* ══════════ 数据 ══════════ */
+  const BASE = (window.WORDS || []).slice();
+  let WORDS = [];
+
+  /* ══════════ 实验开关 ══════════
+     测试版的核心：新功能先挂在这些开关后面，默认开，出问题一关就回到老样子。
+     开关只影响「显示入口」，不做破坏性的事 —— 关掉统计不会删掉已经攒下的历史。 */
+  const EXPS = [
+    { id: "stat", name: "学习统计", desc: "「统计」页：近 14 天曲线、对错比、掌握度分布、分类进度、错词榜", def: true },
+    { id: "csv", name: "导出 CSV", desc: "数据组里多一个「导出 CSV」，整张表带走", def: true },
+    { id: "theme", name: "浅色主题", desc: "⚙ 里多一个 深色 / 浅色，白天看着不费眼", def: true },
+    { id: "sortWrong", name: "错词优先排序", desc: "换下一轮时错得多的先出来（以前是按到期时间）", def: false }
+  ];
+
+  const freshExp = () => {
+    const o = {};
+    EXPS.forEach((e) => { o[e.id] = !!e.def; });
+    return o;
+  };
+  const expOn = (id) => !!(st.exp && st.exp[id]);
+
+  const fresh = () => ({
+    perDay: 20, autoSpeak: false, sound: true, showHom: true, spellHint: "first", ttsRate: 0.88, haptic: true,
+    words: {}, custom: [],
+    today: { d: todayStr(), n: 0 },
+    streak: { n: 0, last: null },
+    updateUrl: UPD_DEFAULT,
+    /* ↓ 测试版多出来的几样 */
+    exp: freshExp(),        // 实验开关
+    theme: "dark",          // dark | light
+    hist: {}                // 按天的记录：{ "2026-11-27": {n, ok, ng} }
+  });
+
+  let st = fresh();
+  try {
+    const raw = localStorage.getItem(KEY);
+    if (raw) st = Object.assign(fresh(), JSON.parse(raw));
+  } catch (e) { /* 首次或坏档：用默认 */ }
+  if (!st.words) st.words = {};
+  if (!Array.isArray(st.custom)) st.custom = [];
+  if (typeof st.showHom !== "boolean") st.showHom = true;
+  if (typeof st.ttsRate !== "number" || !(st.ttsRate > 0)) st.ttsRate = 0.88;
+  if (["none", "first", "length"].indexOf(st.spellHint) < 0) st.spellHint = "first";
+  if (!st.today || st.today.d !== todayStr()) st.today = { d: todayStr(), n: 0 };
+  if (!st.exp || typeof st.exp !== "object") st.exp = freshExp();
+  /* 新加的实验项在旧档里没有 → 补上默认值；已经有值的尊重用户 */
+  EXPS.forEach((e) => { if (typeof st.exp[e.id] !== "boolean") st.exp[e.id] = !!e.def; });
+  if (st.theme !== "light" && st.theme !== "dark") st.theme = "dark";
+  if (!st.hist || typeof st.hist !== "object") st.hist = {};
+
+  function save() { try { localStorage.setItem(KEY, JSON.stringify(st)); } catch (e) {} }
+
+  function rebuildWordlist() {
+    WORDS = BASE.concat(st.custom);
+    const seen = new Set();
+    WORDS = WORDS.filter((w) => { if (!w || !w.en || seen.has(w.en)) return false; seen.add(w.en); return true; });
+  }
+  function card(en) {
+    if (!st.words[en]) st.words[en] = { box: 0, right: 0, wrong: 0, due: 0, fav: false };
+    const c = st.words[en];
+    if (typeof c.right !== "number") c.right = 0;
+    if (typeof c.wrong !== "number") c.wrong = 0;
+    if (typeof c.due !== "number") c.due = 0;
+    if (typeof c.box !== "number") c.box = 0;
+    return c;
+  }
+
+  /* ══════════ 状态 ══════════ */
+  let mode = "card";           // card | quiz | spell | listen | list
+  let filter = "all";          // all | 新词 | 错词 | 收藏 | 分类名
+  let searchText = "";       // 列表模式的搜索词
+  let queue = [];
+  let qpos = 0;
+  let finished = false;
+
+  let cardFlipped = false;
+  let quiz = null;             // {dir, opts, answered, chosen}
+  let spellState = null;       // {answered, ok}
+  let listenState = null;      // {opts, answered, chosen}
+
+  /* ══════════ 声音 ══════════ */
+  let actx = null;
+  function beep(ok) {
+    if (!st.sound) return;
+    try {
+      actx = actx || new (window.AudioContext || window.webkitAudioContext)();
+      const o = actx.createOscillator(), g = actx.createGain();
+      o.connect(g); g.connect(actx.destination);
+      o.type = "sine";
+      o.frequency.value = ok ? 660 : 200;
+      g.gain.setValueAtTime(0.0001, actx.currentTime);
+      g.gain.exponentialRampToValueAtTime(ok ? 0.09 : 0.07, actx.currentTime + 0.01);
+      g.gain.exponentialRampToValueAtTime(0.0001, actx.currentTime + 0.18);
+      o.start(); o.stop(actx.currentTime + 0.2);
+    } catch (e) {}
+  }
+  let voices = [];
+  function loadVoices() { try { voices = window.speechSynthesis ? speechSynthesis.getVoices() : []; } catch (e) { voices = []; } }
+  if (window.speechSynthesis) {
+    loadVoices();
+    speechSynthesis.onvoiceschanged = loadVoices;
+  }
+
+  const bootAt = now();
+  let ttsWarned = false;
+  function ttsWarn() {
+    if (ttsWarned) return;
+    ttsWarned = true;
+    toast("这台手机的文字转语音没就绪：系统设置 → 无障碍/语音 → 装一下英文语音包");
+  }
+
+  /* 朗读：安卓壳子里走系统 TTS（AndroidTTS），浏览器里走 Web Speech。
+     Android WebView 没有 Web Speech 的实现，speechSynthesis 存在但不出声，所以必须先问原生接口。 */
+  function speak(t) {
+    if (!t) return;
+    const text = String(t).replace(/[()（）]/g, " ").replace(/\s+/g, " ").trim();
+    if (!text) return;
+
+    if (window.AndroidTTS && typeof window.AndroidTTS.speak === "function") {
+      try {
+        if (!window.AndroidTTS.speak(text)) {
+          const ready = window.AndroidTTS.ready ? window.AndroidTTS.ready() : false;
+          if (ready || now() - bootAt > 4000) ttsWarn();
+        }
+        return;
+      } catch (e) { /* 退到 Web Speech */ }
+    }
+
+    if (!window.speechSynthesis) { ttsWarn(); return; }
+    try {
+      speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance(text);
+      u.lang = "en-US"; u.rate = st.ttsRate;
+      const v = voices.find((x) => /^en[-_]US/i.test(x.lang)) || voices.find((x) => /^en/i.test(x.lang));
+      if (v) u.voice = v;
+      speechSynthesis.speak(u);
+    } catch (e) {}
+  }
+
+  /* 语速同步给原生 TTS（WebView 之外的安卓壳子） */
+  function applyRate() {
+    if (window.AndroidTTS && typeof window.AndroidTTS.setRate === "function") {
+      try { window.AndroidTTS.setRate(st.ttsRate); } catch (e) {}
+    }
+  }
+
+  /* ══════════ 震动 ══════════
+     安卓壳子里走 AndroidHaptic（系统 Vibrator），浏览器里退到 navigator.vibrate。
+     只在「手上能感觉到的地方」震：判定对错、选项对错、收藏、翻面、一轮走完、更新成功。
+     打字、翻页面、开关设置都不震 —— 那些震了只会烦。 */
+  function buzz(kind) {
+    if (!st.haptic) return;
+    const pattern = {
+      tap: [0, 8],
+      ok: [0, 16],
+      no: [0, 26, 60, 26],
+      done: [0, 30, 80, 30, 80, 70]
+    }[kind] || [0, 10];
+    try {
+      if (window.AndroidHaptic && typeof window.AndroidHaptic.pattern === "function") {
+        window.AndroidHaptic.pattern(pattern.join(","));
+        return;
+      }
+      if (navigator.vibrate) navigator.vibrate(pattern);
+    } catch (e) { /* 没有就算了 */ }
+  }
+  function toast(msg) {
+    const d = document.createElement("div");
+    d.textContent = msg;
+    d.style.cssText = "position:fixed;left:50%;bottom:34px;transform:translateX(-50%);max-width:82vw;"
+      + "background:#1e2c36;border:1px solid #2f4756;color:#e8f1f4;padding:10px 16px;border-radius:12px;"
+      + "font-size:13px;z-index:99;box-shadow:0 12px 34px #0009;transition:opacity .28s";
+    document.body.appendChild(d);
+    setTimeout(() => { d.style.opacity = "0"; setTimeout(() => d.remove(), 320); }, 1500);
+  }
+
+  /* ══════════ 主题（实验 · theme） ══════════
+     深色是原样。浅色只换 CSS 变量，DOM 一个字都不动，所以切来切去没有副作用。 */
+  function applyTheme() {
+    const day = expOn("theme") && st.theme === "light";
+    document.documentElement.classList.toggle("day", day);
+    const m = document.querySelector('meta[name="theme-color"]');
+    if (m) m.setAttribute("content", day ? "#eef4f7" : "#0b1014");
+  }
+
+  /* 「再点一次确认」的通用版：实验台、恢复内置页面都用它 */
+  function armConfirmTop(btn, label, cb) {
+    if (btn.dataset.armed === "1") {
+      btn.dataset.armed = "";
+      btn.classList.remove("armed");
+      btn.textContent = label;
+      cb();
+      return;
+    }
+    btn.dataset.armed = "1";
+    btn.classList.add("armed");
+    btn.textContent = "再点一次";
+    window.setTimeout(function () {
+      if (btn.dataset.armed === "1") {
+        btn.dataset.armed = "";
+        btn.classList.remove("armed");
+        btn.textContent = label;
+      }
+    }, 3500);
+  }
+
+  /* ══════════ 实验台（⚗） ══════════
+     测试版的门面：每个新功能一行开关。关掉 = 回到正式版的行为，
+     但已经攒下的数据（历史、进度）一条都不删 —— 只是入口不显示。 */
+  let renderExp = function () {};
+
+  function initExperiments() {
+    const mask = document.createElement("div");
+    mask.className = "mask";
+    mask.id = "expMask";
+    mask.innerHTML = '<div class="sheet">'
+      + '<h3>⚗ 实验台 <button class="x" id="closeExp">✕</button></h3>'
+      + '<div class="exp-note">这是测试版，跟正式版各存各的进度。新功能挂在这几个开关后面：' +
+        "关掉就回到正式版的样子，词库和历史不会丢。</div>"
+      + '<div id="expList"></div>'
+      + '<div class="set-sec">壳子这边</div>'
+      + '<div id="expShell"></div>'
+      + '<div class="mini-btns" style="justify-content:center;margin-top:16px">'
+      + '<button class="mini" id="expReset">实验全恢复默认</button></div>'
+      + '<div class="hint" style="text-align:center;margin-top:12px">正式版 v1.9.1 · 这一份 ' + APP_VERSION + "</div>"
+      + "</div>";
+    document.body.appendChild(mask);
+
+    renderExp = function () {
+      const list = mask.querySelector("#expList");
+      if (!list) return;
+      let html = "";
+      EXPS.forEach(function (e) {
+        html += '<div class="set-row"><div class="lab">' + esc(e.name) + "<small>" + esc(e.desc) + "</small></div>"
+          + '<div class="switch exp-sw' + (expOn(e.id) ? " on" : "") + '" data-exp="' + esc(e.id) + '"></div></div>';
+      });
+      list.innerHTML = html;
+
+      /* 壳能力：有没有原生接口，一眼看出来 */
+      const hasU = updHasApp();
+      const canRestore = !!(window.AndroidUpdate && typeof window.AndroidUpdate.restore === "function");
+      let sh = '<div class="set-row"><div class="lab">热更看门狗<small>'
+        + (hasU ? "开着的：换上去的页面 5 秒没回应就自动退回内置" : "只有安卓壳里有；网页版用不上")
+        + "</small></div>"
+        + '<span class="tag ' + (hasU ? "ok" : "off") + '">' + (hasU ? "在跑" : "不在") + "</span></div>";
+      sh += '<div class="set-row"><div class="lab">这一页从哪来<small>'
+        + (hotUpdated() ? "热更下来的，不是安装包自带那份" : "安装包 / 文件夹里自带的")
+        + "</small></div>"
+        + '<button class="mini" id="expRestore"' + (canRestore ? "" : " disabled") + ">恢复内置页面</button></div>";
+      mask.querySelector("#expShell").innerHTML = sh;
+
+      const rb = mask.querySelector("#expRestore");
+      if (rb) {
+        rb.addEventListener("click", function () {
+          armConfirmTop(rb, "恢复内置页面", function () {
+            try {
+              window.AndroidUpdate.restore();
+              toast("正在退回安装包自带的页面");
+            } catch (e) { toast("退不了，壳里没这个接口"); }
+          });
+        });
+      }
+    };
+
+    mask.querySelector("#expList").addEventListener("click", function (e) {
+      const sw = e.target.closest(".exp-sw");
+      if (!sw) return;
+      const id = sw.dataset.exp;
+      st.exp[id] = !expOn(id);
+      sw.classList.toggle("on", st.exp[id]);
+      save();
+      if (id === "theme") applyTheme();
+      buzz("tap");
+      refreshExpUI();
+      render();
+    });
+
+    mask.querySelector("#expReset").addEventListener("click", function () {
+      armConfirmTop(this, "实验全恢复默认", function () {
+        st.exp = freshExp();
+        save(); applyTheme(); render(); renderExp();
+        toast("实验开关回默认了");
+      });
+    });
+
+    renderExp();
+  }
+
+  /* ══════════ 在线更新 ══════════
+     两条路：
+     1) 内容（词库 / 页面 / 样式）—— 从电脑上的目录拉一份新的单文件 HTML，存进 App 私有目录，
+        刷新页面即生效。不用重装 APK，进度（localStorage）一点不动。
+     2) 安装包 —— 只有安卓壳子本身改了才需要。点一下下载，下完自动叫出系统安装器。
+     接口由 MainActivity 的 UpdaterBridge 提供：window.AndroidUpdate。 */
+  let updPending = null;   // 最近一次 update.json
+  let updAuto = false;     // 打开软件时那一次静默检查：只提示，不自动换
+
+  function updHasApp() {
+    return !!(window.AndroidUpdate && typeof window.AndroidUpdate.check === "function");
+  }
+  /* 现在这页是安装包里自带的，还是从网上换下来的？
+     原生那边记着下过哪个版本号，对得上就是热更新来的。 */
+  function hotUpdated() {
+    if (!updHasApp()) return false;
+    try {
+      const c = window.AndroidUpdate.contentVersion ? window.AndroidUpdate.contentVersion() : "";
+      return !!c && c === APP_VERSION;
+    } catch (e) { return false; }
+  }
+  function updBase() {
+    return String(st.updateUrl || UPD_DEFAULT).replace(/\/+$/, "");
+  }
+  function verNewer(a, b) {
+    const pa = String(a || "").split("."), pb = String(b || "").split(".");
+    const n = Math.max(pa.length, pb.length);
+    for (let i = 0; i < n; i++) {
+      const x = parseInt(pa[i], 10) || 0, y = parseInt(pb[i], 10) || 0;
+      if (x !== y) return x > y;
+    }
+    return false;
+  }
+
+  function refreshUpdLabels() {
+    const cur = document.getElementById("updCur");
+    const sub = document.getElementById("updSub");
+    const go = document.getElementById("updGo");
+    if (cur) cur.textContent = "v" + APP_VERSION;
+    if (!sub) return;
+    if (!updHasApp()) {
+      sub.textContent = "网页版：刷新浏览器就是最新";
+      if (go) { go.textContent = "检查更新"; go.classList.remove("primary"); }
+      return;
+    }
+    const content = safeContentVersion();
+    const app = safeAppVersion();
+    sub.textContent = (content && content !== APP_VERSION ? "已热更到 " + content + " · " : "")
+      + "安装包 v" + (app || "?");
+    const p = pendingUpdate();
+    if (go) {
+      go.textContent = p ? "更新到 v" + p.v : "检查更新";
+      go.classList.toggle("primary", !!p);
+    }
+  }
+
+  function safeAppVersion() {
+    try { return window.AndroidUpdate.appVersion ? window.AndroidUpdate.appVersion() : ""; } catch (e) { return ""; }
+  }
+  function safeContentVersion() {
+    try { return window.AndroidUpdate.contentVersion ? window.AndroidUpdate.contentVersion() : ""; } catch (e) { return ""; }
+  }
+
+  /* 有没有新版：壳新也算，内容新也算 */
+  function pendingUpdate() {
+    const o = updPending;
+    if (!o) return null;
+    const apkNew = o.apkVersion && verNewer(o.apkVersion, safeAppVersion() || APP_VERSION);
+    const htmlNew = verNewer(o.version, APP_VERSION);
+    if (!apkNew && !htmlNew) return null;
+    return { apk: !!apkNew, html: htmlNew, v: o.version, apkV: o.apkVersion || o.version };
+  }
+
+  function checkUpdate(auto) {
+    if (!updHasApp()) {
+      toast("手机 App 里才有在线更新；网页上刷新浏览器就是最新的");
+      return;
+    }
+    updAuto = !!auto;
+    if (!updAuto) { toast("正在检查…"); refreshUpdLabels(); }
+    try { window.AndroidUpdate.check(updBase()); } catch (e) { toast("调不动更新接口"); }
+  }
+
+  /* 一键更新：拿现成的清单直接干，不再分两步 */
+  function applyUpdate() {
+    const p = pendingUpdate();
+    if (!p) {
+      if (updPending) { toast("已是最新 · v" + APP_VERSION); refreshUpdLabels(); }
+      else checkUpdate(false);
+      return;
+    }
+    const o = updPending;
+    if (p.apk) {
+      // 壳新：装壳最稳 —— 装完自带新内容，而且不用再点一次
+      const name = o.apk || "lunji-words.apk";
+      const url = /^https?:/i.test(name) ? name : updBase() + "/" + name;
+      toast("有新安装包 v" + p.apkV + "，正在下…");
+      try { window.AndroidUpdate.installApk(url); } catch (e) { toast("调不动更新接口"); }
+      return;
+    }
+    const html = o.html || "ship-words.html";
+    const url = /^https?:/i.test(html) ? html : updBase() + "/" + html;
+    toast("正在下 v" + p.v + "…");
+    try { window.AndroidUpdate.applyContent(url, o.version); } catch (e) { toast("调不动更新接口"); }
+  }
+
+  function installApkOnline() {
+    if (!updHasApp()) { toast("网页版不用装包，刷新就是最新的"); return; }
+    const name = (updPending && updPending.apk) ? updPending.apk : "lunji-words.apk";
+    const url = /^https?:/i.test(name) ? name : updBase() + "/" + name;
+    toast("正在下安装包…");
+    try { window.AndroidUpdate.installApk(url); } catch (e) { toast("调不动更新接口"); }
+    refreshUpdLabels();
+  }
+
+  function installApkOnline() {
+    if (!updHasApp()) { toast("网页版不用装包，刷新就是最新的"); return; }
+    const name = (updPending && updPending.apk) ? updPending.apk : "lunji-words.apk";
+    const url = /^https?:/i.test(name) ? name : updBase() + "/" + name;
+    toast("正在下安装包…");
+    try { window.AndroidUpdate.installApk(url); } catch (e) { toast("调不动更新接口"); }
+    refreshUpdLabels();
+  }
+
+  /* 原生那边的回调 */
+  window.__updCheck = function (raw, err) {
+    if (!raw) {
+      if (!updAuto) toast("连不上：" + (err || "网络不通"));
+      refreshUpdLabels();
+      return;
+    }
+    let o = null;
+    try { o = JSON.parse(raw); } catch (e) { o = null; }
+    if (!o || !o.version) {
+      if (!updAuto) toast("更新信息看不懂，检查一下地址");
+      return;
+    }
+    updPending = o;
+    refreshUpdLabels();
+    if (updAuto) {
+      const p = pendingUpdate();
+      if (p) { showUpdateBanner(o, p); }
+      return;
+    }
+    applyUpdate();
+  };
+
+  window.__updApplied = function (ok, msg) {
+    if (!ok) { toast("更新没成：" + (msg || "未知原因")); return; }
+    buzz("done");
+    toast("已更新到 v" + ((updPending && updPending.version) || "") + "，正在重开页面");
+    window.setTimeout(function () {
+      try { window.AndroidUpdate.reload(); } catch (e) { try { location.reload(); } catch (e2) {} }
+    }, 700);
+  };
+
+  window.__updApk = function (ok, msg) {
+    if (!ok) { toast("安装包没下成：" + (msg || "未知原因")); return; }
+    toast("下好了，装一下覆盖旧版，进度还在");
+  };
+
+  /* 从本地文件导入（不走网络）*/
+  window.__imported = function (ok, msg) {
+    if (!ok) { toast("导入没成：" + (msg || "未知原因")); return; }
+    toast("导入好了 · " + (msg || "") + "，正在重开页面");
+    window.setTimeout(function () {
+      try { window.AndroidUpdate.reload(); } catch (e) { try { location.reload(); } catch (e2) {} }
+    }, 600);
+  };
+
+  function importFromFile() {
+    if (!updHasApp() || typeof window.AndroidUpdate.pickFile !== "function") {
+      toast("这个安装包还不支持文件导入，装一次 1.8.2 以后的");
+      return;
+    }
+    try { window.AndroidUpdate.pickFile(); } catch (e) { toast("打不开文件选择器"); }
+  }
+
+  /* ══════════ 开屏更新提示 ══════════
+     打开 App 静默查一次，有新版就在顶部挂一条横幅：点「更新」一键装好，点 ✕ 今天不再烦你。 */
+  function showUpdateBanner(o, p) {
+    const el = document.getElementById("banner");
+    if (!el) return;
+    el.innerHTML = '<span class="bn-txt">有新版 <b>v' + esc(p.v) + "</b>"
+      + (p.apk ? " · 要先装一次包" : "") + "</span>"
+      + '<button class="bn-go" id="bnGo">更新</button>'
+      + '<button class="bn-x" id="bnClose" title="先不更新">✕</button>';
+    el.classList.add("show");
+    const go = document.getElementById("bnGo");
+    const x = document.getElementById("bnClose");
+    if (go) go.addEventListener("click", function () { applyUpdate(); });
+    if (x) x.addEventListener("click", function () { el.classList.remove("show"); });
+  }
+
+  /* ══════════ 队列 ══════════ */
+  const cats = () => {
+    const m = {};
+    WORDS.forEach((w) => { m[w.cat || "未分类"] = (m[w.cat || "未分类"] || 0) + 1; });
+    return m;
+  };
+  function inFilter(w) {
+    if (filter === "all") return true;
+    if (filter === "新词") return card(w.en).box === 0;
+    if (filter === "错词") return card(w.en).wrong > 0 && card(w.en).box < 4;
+    if (filter === "收藏") return !!card(w.en).fav;
+    return (w.cat || "未分类") === filter;
+  }
+  function buildQueue() {
+    const list = WORDS.filter(inFilter);
+    shuffle(list);
+    const t = now();
+    /* 实验「错词优先排序」：打开时，错得多的排前面，压过「到期时间」这一条 */
+    const wrongFirst = expOn("sortWrong");
+    list.sort((x, y) => {
+      const a = card(x.en), b = card(y.en);
+      if (wrongFirst && a.wrong !== b.wrong) return b.wrong - a.wrong;
+      if (a.box !== b.box) return a.box - b.box;
+      const pa = a.due <= t ? 0 : 1, pb = b.due <= t ? 0 : 1;
+      if (pa !== pb) return pa - pb;
+      if ((a.wrong > 0) !== (b.wrong > 0)) return a.wrong > 0 ? -1 : 1;
+      return 0;
+    });
+    queue = list; qpos = 0; finished = queue.length === 0;
+    cardFlipped = false; quiz = null; spellState = null; listenState = null;
+  }
+  const cur = () => queue[qpos] || null;
+
+  /* ══════════ 评分 ══════════ */
+  function grade(ok) {
+    const w = cur();
+    if (!w) return;
+    const c = card(w.en);
+    if (ok) {
+      c.right++;
+      c.box = Math.min(5, c.box + 1);
+      c.due = now() + BOX_DAYS[c.box] * DAY;
+    } else {
+      c.wrong++;
+      c.box = Math.max(0, c.box - 1);
+      c.due = now() + 10 * 60000;
+    }
+    const t = todayStr();
+    if (st.today.d !== t) st.today = { d: t, n: 0 };
+    st.today.n++;
+    /* 统计页的数据来源：每天一行，只攒数字不攒词，体积极小 */
+    const h = st.hist[t] || (st.hist[t] = { n: 0, ok: 0, ng: 0 });
+    h.n++;
+    if (ok) h.ok++; else h.ng++;
+    if (st.streak.last !== t) {
+      const y = todayStr(Date.now() - DAY);
+      st.streak.n = st.streak.last === y ? (st.streak.n || 1) + 1 : 1;
+      st.streak.last = t;
+    }
+    beep(ok);
+    buzz(ok ? "ok" : "no");
+    save();
+  }
+
+  function advance() {
+    qpos++;
+    cardFlipped = false; quiz = null; spellState = null; listenState = null;
+    if (qpos >= queue.length) { finished = true; buzz("done"); }
+    render();
+    if (!finished && mode === "card") autoSpeakCurrent();
+  }
+
+  /* 翻面不重绘整个舞台，只切 class —— 这样才有真正的 3D 翻转动画 */
+  function toggleCard() {
+    if (mode !== "card" || finished || !cur()) return;
+    cardFlipped = !cardFlipped;
+    const el = document.querySelector(".card");
+    if (el) el.classList.toggle("flipped", cardFlipped);
+    buzz("tap");
+    if (cardFlipped) speak(cur().en);   // 只在翻到背面时念，翻回来不重复
+  }
+
+  /* 纯翻词：只移动指针，不改变掌握度。dir = +1 下一个 / -1 上一个 */
+  function step(dir) {
+    if (mode !== "card" || !cur()) return false;
+    const np = qpos + dir;
+    if (np < 0 || np >= queue.length) return false;
+    qpos = np;
+    finished = false;
+    cardFlipped = false;
+    render();
+    if (st.autoSpeak) autoSpeakCurrent();
+    return true;
+  }
+  function autoSpeakCurrent() {
+    if (st.autoSpeak && mode === "card" && cur()) speak(cur().en);
+  }
+
+  /* ══════════ 出题 ══════════ */
+  function buildQuiz() {
+    const w = cur(); if (!w) return;
+    const dir = Math.random() < 0.5 ? "en2zh" : "zh2en";
+    const field = dir === "en2zh" ? "zh" : "en";
+    const pool = WORDS.filter((x) => x.en !== w.en && x[field] !== w[field]);
+    shuffle(pool);
+    const opts = [w[field]].concat(pool.slice(0, 3).map((x) => x[field]));
+    shuffle(opts);
+    quiz = { dir, field, opts, answered: false, chosen: null };
+  }
+  function buildListen() {
+    const w = cur(); if (!w) return;
+    const pool = WORDS.filter((x) => x.en !== w.en);
+    shuffle(pool);
+    const opts = [w.en].concat(pool.slice(0, 3).map((x) => x.en));
+    shuffle(opts);
+    listenState = { opts, answered: false, chosen: null };
+    setTimeout(() => speak(w.en), 220);
+  }
+
+  /* ══════════ 渲染 ══════════ */
+  function renderStats() {
+    let mastered = 0, due = 0;
+    WORDS.forEach((w) => {
+      const c = card(w.en);
+      if (c.box >= 3) mastered++;
+      if (c.box > 0 && c.box < 5 && c.due <= now()) due++;
+    });
+    $("#statMastered").innerHTML = mastered + "<small>/" + WORDS.length + "</small>";
+    $("#statToday").innerHTML = (st.today.d === todayStr() ? st.today.n : 0) + "<small>/" + st.perDay + "</small>";
+    $("#statDue").textContent = due;
+    $("#statStreak").textContent = st.streak.n || 0;
+    const done = Math.min(1, (st.today.d === todayStr() ? st.today.n : 0) / st.perDay);
+    $("#bar").style.width = (done * 100).toFixed(1) + "%";
+    $("#ptext").textContent = Math.round(done * 100) + "%";
+  }
+
+  function renderChips() {
+    const c = cats();
+    const total = WORDS.length;
+    const newN = WORDS.filter((w) => card(w.en).box === 0).length;
+    const wrongN = WORDS.filter((w) => card(w.en).wrong > 0 && card(w.en).box < 4).length;
+    const favN = WORDS.filter((w) => card(w.en).fav).length;
+
+    /* 第一排固定四个：错词 / 收藏 在前，然后全部、新词。
+       单词从 50 涨到两百多以后，分类全塞在这一排会挤成一条缝，所以分类挪到第二排。 */
+    const pin = [
+      { f: "错词", n: wrongN },
+      { f: "收藏", n: favN },
+      { f: "all", n: total, label: "全部" },
+      { f: "新词", n: newN }
+    ];
+    let html = "";
+    pin.forEach((p) => {
+      html += '<button class="chip' + (filter === p.f ? " on" : "") + '" data-f="' + esc(p.f) + '">'
+        + esc(p.label || p.f) + '<span class="n">' + p.n + "</span></button>";
+    });
+    $("#chips").innerHTML = html;
+
+    /* 第二排：分类（含「自加」），一行横向滑动 */
+    let cs = '<span class="cats-label">分类</span>';
+    Object.keys(c).forEach((k) => {
+      cs += '<button class="chip sm' + (filter === k ? " on" : "") + '" data-f="' + esc(k) + '">'
+        + esc(k) + '<span class="n">' + c[k] + "</span></button>";
+    });
+    const catsEl = $("#cats");
+    if (catsEl) {
+      catsEl.innerHTML = cs;
+      const on = catsEl.querySelector(".chip.on");
+      if (on && typeof on.scrollIntoView === "function") {
+        try { on.scrollIntoView({ block: "nearest", inline: "center" }); } catch (e) {}
+      }
+    }
+  }
+
+  function renderTabs() {
+    document.querySelectorAll(".tab").forEach((b) => {
+      const off = b.dataset.m === "stat" && !expOn("stat");
+      b.style.display = off ? "none" : "";
+      b.classList.toggle("on", b.dataset.m === mode);
+    });
+  }
+
+  function doneBlock() {
+    const empty = queue.length === 0;
+    return '<div class="done-card"><div class="big">' + (empty ? "🫗" : "✅") + "</div>"
+      + "<h2>" + (empty ? "这个范围里没词" : "这一轮走完了") + "</h2>"
+      + "<p>" + (empty ? "换个分类，或者把筛选切回「全部」。" : "答过的都记进去了，掌握度低的下一轮会先出来。") + "</p>"
+      + '<div style="display:flex;gap:10px;max-width:320px;width:100%">'
+      + '<button class="btn primary" data-act="restart">再来一轮</button>'
+      + '<button class="btn" data-act="openlist">看看列表</button></div></div>';
+  }
+
+  function renderStage() {
+    const el = $("#stage");
+    if (mode === "stat") { el.innerHTML = renderStat(); return; }
+    if (mode === "list") { el.innerHTML = renderList(); return; }
+    if (finished || !cur()) { el.innerHTML = doneBlock(); return; }
+    if (mode === "card") return renderCard(el);
+    if (mode === "quiz") { if (!quiz) buildQuiz(); return renderQuiz(el); }
+    if (mode === "spell") return renderSpell(el);
+    if (mode === "listen") { if (!listenState) buildListen(); return renderListen(el); }
+  }
+
+  function levelBar(box) {
+    let s = '<span class="lv">';
+    for (let i = 0; i < 5; i++) s += "<i" + (i < box ? ' class="f"' : "") + "></i>";
+    return s + "</span>";
+  }
+
+  function renderCard(el) {
+    const w = cur(); const c = card(w.en);
+    const meta = (w.pos || w.ipa)
+      ? '<div class="meta-line">'
+        + (w.pos ? '<span class="pos">' + esc(w.pos) + "</span>" : "")
+        + (w.ipa ? '<span class="ipa">' + esc(w.ipa) + "</span>" : "")
+        + "</div>"
+      : "";
+    const hom = (w.hom && st.showHom)
+      ? '<div class="hom"><span class="hom-tag">谐音</span>' + esc(w.hom) + "</div>"
+      : "";
+    const tools = '<div class="card-tools">'
+      + '<button class="tool-btn' + (c.fav ? " on" : "") + '" data-act="fav" title="收藏 / 取消收藏">' + (c.fav ? "★" : "☆") + "</button>"
+      + '<button class="tool-btn flip-btn" data-act="flip" title="翻面：中文 / 英文">' + (cardFlipped ? "EN" : "中") + "</button>"
+      + "</div>";
+    el.innerHTML =
+      '<div class="card-wrap"><div class="card' + (cardFlipped ? " flipped" : "") + '" data-act="speak">'
+      + '<div class="face front">'
+      + tools
+      + '<span class="cat-tag">' + esc(w.cat || "") + "</span>"
+      + '<div class="word">' + esc(w.en) + "</div>"
+      + meta + hom
+      + '<div class="hint">' + levelBar(c.box) + "&nbsp; 点单词念一遍，点右上角「中」看中文</div>"
+      + "</div>"
+      + '<div class="face back">'
+      + tools
+      + '<span class="cat-tag">' + esc(w.cat || "") + "</span>"
+      + '<div class="zh">' + esc(w.zh) + "</div>"
+      + (w.phrase ? '<div class="phrase">' + esc(w.phrase) + "</div>" : "")
+      + (w.ipa ? '<div class="back-word">' + esc(w.ipa) + "</div>" : "")
+      + (w.hom && st.showHom ? '<div class="hom small"><span class="hom-tag">谐音</span>' + esc(w.hom) + "</div>" : "")
+      + "</div></div></div>"
+      + '<div class="actions">'
+      + '<button class="btn bad" data-act="no">不认识 <span class="kbd">1</span></button>'
+      + '<button class="btn ok" data-act="yes">认识 <span class="kbd">2</span></button>'
+      + "</div>"
+      + '<div class="hint" style="text-align:center;margin-top:12px">第 ' + (qpos + 1) + " / " + queue.length
+      + " 个 · 左右滑翻词，1/2 判定 · 点单词朗读</div>";
+  }
+
+  function renderQuiz(el) {
+    const w = cur(); const q = quiz;
+    const prompt = q.dir === "en2zh" ? w.en : w.zh;
+    const sub = q.dir === "en2zh" ? "选出它的中文意思" : "选出对应的英文";
+    let opts = q.opts.map((o, i) => {
+      let cls = "opt";
+      if (q.answered) {
+        cls += " done";
+        if (o === w[q.field]) cls += " correct";
+        else if (o === q.chosen) cls += " wrong";
+      }
+      return '<button class="' + cls + '" data-opt="' + i + '"><span class="idx">' + (i + 1) + "</span><span>" + esc(o) + "</span></button>";
+    }).join("");
+    el.innerHTML =
+      '<div class="q-head"><span class="cat-tag">' + esc(w.cat || "") + '</span>'
+      + '<span class="hint">' + (qpos + 1) + " / " + queue.length + '</span></div>'
+      + '<div class="q-prompt">' + esc(prompt) + "</div>"
+      + '<div class="q-sub">' + sub + (q.dir === "en2zh" && q.answered ? " · " + esc(w.phrase || "") : "") + "</div>"
+      + '<div class="opts">' + opts + "</div>"
+      + (q.answered
+        ? '<div class="actions"><button class="btn primary" data-act="next">下一题 <span class="kbd">↵</span></button></div>'
+        : '<div class="actions"><button class="btn" data-act="speak">🔊 念一遍</button></div>');
+  }
+
+  function renderSpell(el) {
+    const w = cur();
+    const s = spellState || { answered: false, ok: false };
+    const hint = (w.zh || "") + (w.pos ? "  (" + w.pos + ")" : "");
+    const len = w.en.replace(/[^A-Za-z ]/g, "").trim();
+    const first = len.charAt(0).toUpperCase();
+    const wordCount = len.split(/\s+/).filter(Boolean).length;
+    let sub = esc(hint);
+    let ph = "拼出英文";
+    if (st.spellHint === "length") {
+      sub += " · " + esc(len.replace(/[A-Za-z]/g, "·")) + "（" + wordCount + " 个词）";
+      ph = "首字母 " + first + " 开头";
+    } else if (st.spellHint === "first") {
+      sub += " · 首字母 " + esc(first);
+      ph = "首字母 " + first + " 开头";
+    }
+    el.innerHTML =
+      '<div class="q-head"><span class="cat-tag">' + esc(w.cat || "") + '</span>'
+      + '<span class="hint">' + (qpos + 1) + " / " + queue.length + "</span></div>"
+      + '<div class="q-prompt">' + esc(w.zh) + "</div>"
+      + '<div class="q-sub">' + sub + "</div>"
+      + '<div class="spell-box">'
+      + '<input class="spell-input" id="spellIn" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="' + esc(ph) + '"'
+      + (s.answered ? " disabled" : "") + ">"
+      + '<div class="feedback' + (s.answered ? (s.ok ? " ok" : " bad") : "") + '" id="fb">'
+      + (s.answered ? (s.ok ? "对，就是它。" : "正确答案：<em>" + esc(w.en) + "</em>") : "&nbsp;")
+      + "</div>"
+      + '<div class="actions">'
+      + (s.answered
+        ? '<button class="btn primary" data-act="next">下一题 <span class="kbd">↵</span></button>'
+        : '<button class="btn primary" data-act="submit">提交 <span class="kbd">↵</span></button>'
+          + '<button class="btn" data-act="show">看答案</button>')
+      + "</div></div>";
+    if (!s.answered) {
+      const inp = $("#spellIn");
+      if (inp) setTimeout(() => inp.focus(), 30);
+    }
+  }
+
+  function renderListen(el) {
+    const w = cur(); const s = listenState;
+    let opts = s.opts.map((o, i) => {
+      let cls = "opt";
+      if (s.answered) {
+        cls += " done";
+        if (o === w.en) cls += " correct";
+        else if (o === s.chosen) cls += " wrong";
+      }
+      return '<button class="' + cls + '" data-opt="' + i + '"><span class="idx">' + (i + 1) + "</span><span>" + esc(o) + "</span></button>";
+    }).join("");
+    el.innerHTML =
+      '<div class="q-head"><span class="cat-tag">' + esc(w.cat || "") + '</span>'
+      + '<span class="hint">' + (qpos + 1) + " / " + queue.length + "</span></div>"
+      + '<div class="q-prompt">🔊 听发音，选出你听到的词</div>'
+      + '<div class="q-sub">' + (s.answered ? esc(w.zh) + " · " + esc(w.phrase || "") : "没声就点下面的按钮再放一次") + "</div>"
+      + '<div class="opts">' + opts + "</div>"
+      + '<div class="actions">'
+      + '<button class="btn" data-act="speak">🔊 再放一次</button>'
+      + (s.answered ? '<button class="btn primary" data-act="next">下一题 <span class="kbd">↵</span></button>' : "")
+      + "</div>";
+  }
+
+  function matchSearch(w) {
+    const q = searchText.trim().toLowerCase();
+    if (!q) return true;
+    const hay = (w.en + " " + w.zh + " " + (w.ipa || "") + " " + (w.phrase || "") + " " + (w.hom || "") + " " + (w.cat || "")).toLowerCase();
+    return hay.indexOf(q) >= 0;
+  }
+
+  function renderRows() {
+    const list = WORDS.filter(inFilter).filter(matchSearch);
+    if (!list.length) {
+      return '<div class="search-empty">'
+        + (searchText ? "没搜到「" + esc(searchText) + "」" : "这个范围里没词")
+        + "</div>";
+    }
+    let html = "";
+    const q = searchText.trim().toLowerCase();
+    list.forEach((w) => {
+      const c = card(w.en);
+      // 搜的是例句时，把例句也显示出来，不然看不出为什么命中
+      const hitPhrase = q && (w.phrase || "").toLowerCase().indexOf(q) >= 0
+        && (w.en + " " + w.zh + " " + (w.ipa || "")).toLowerCase().indexOf(q) < 0;
+      html += '<div class="row" data-en="' + esc(w.en) + '">'
+        + levelBar(c.box)
+        + '<div><div class="en">' + esc(w.en) + " <span class=\"pos-inline\">" + esc(w.pos || "") + "</span></div>"
+        + '<div class="zh2">' + esc(w.zh) + (w.ipa ? '<span class="ipa2">' + esc(w.ipa) + "</span>" : "") + "</div>"
+        + (hitPhrase ? '<div class="zh2 phrase-hit">' + esc(w.phrase) + "</div>" : "")
+        + "</div>"
+        + '<button class="fav' + (c.fav ? " on" : "") + '" data-fav="' + esc(w.en) + '">' + (c.fav ? "★" : "☆") + "</button>"
+        + "</div>";
+    });
+    return html;
+  }
+
+  function renderList() {
+    return '<div class="search-box">'
+      + '<input type="search" id="listSearch" class="search-input" placeholder="搜英文 / 中文 / 音标 / 例句"'
+      + ' value="' + esc(searchText) + '" autocomplete="off" spellcheck="false"></div>'
+      + '<div class="list" id="listBody">' + renderRows() + "</div>";
+  }
+
+  /* ══════════ 统计页（实验 · stat） ══════════
+     数据全从 st.hist（每天一个 n/ok/ng）和 st.words 里现算，不另存一份，
+     所以关掉这个实验、再打开，历史还在。 */
+  function histDays(n) {
+    const out = [];
+    for (let i = n - 1; i >= 0; i--) {
+      const d = todayStr(Date.now() - i * DAY);
+      const h = st.hist[d] || {};
+      out.push({ d: d, n: h.n || 0, ok: h.ok || 0, ng: h.ng || 0 });
+    }
+    return out;
+  }
+
+  function renderStat() {
+    const days = histDays(14);
+    const maxDay = Math.max(1, days.map((x) => x.n).reduce((a, b) => Math.max(a, b), 0));
+
+    let bars = "";
+    days.forEach((x) => {
+      const pct = Math.round((x.n / maxDay) * 100);
+      const mmdd = x.d.slice(5);
+      bars += '<div class="sbar' + (x.n ? "" : " zero") + '" data-d="' + x.d + '" data-n="' + x.n
+        + '" title="' + x.d + " · " + x.n + ' 个">'
+        + '<i style="height:' + pct + '%"></i>'
+        + "<span>" + mmdd.slice(3) + "</span></div>";
+    });
+
+    /* 掌握度分布：box 0 是新词，5 是牢牢记住 */
+    const boxN = [0, 0, 0, 0, 0, 0];
+    let okAll = 0, ngAll = 0, wrongList = [];
+    WORDS.forEach((w) => {
+      const c = card(w.en);
+      boxN[Math.max(0, Math.min(5, c.box))]++;
+      okAll += c.right || 0;
+      ngAll += c.wrong || 0;
+      if (c.wrong > 0) wrongList.push({ w: w, c: c });
+    });
+    const total = okAll + ngAll;
+    const acc = total ? Math.round((okAll / total) * 100) : 0;
+
+    const boxLabels = ["新词", "刚见过", "眼熟", "会一半", "基本会", "牢固"];
+    const boxRows = boxN.map((n, i) => {
+      const pct = WORDS.length ? (n / WORDS.length) * 100 : 0;
+      return '<div class="srow"><span class="sl">' + boxLabels[i] + "</span>"
+        + '<span class="sbar2"><i style="width:' + pct.toFixed(1) + '%"></i></span>'
+        + '<span class="sn">' + n + "</span></div>";
+    }).join("");
+
+    /* 分类进度 */
+    const byCat = {};
+    WORDS.forEach((w) => {
+      const k = w.cat || "未分类";
+      const o = byCat[k] || (byCat[k] = { n: 0, ok: 0 });
+      o.n++;
+      if (card(w.en).box >= 3) o.ok++;
+    });
+    const catRows = Object.keys(byCat).sort((a, b) => byCat[b].n - byCat[a].n).map((k) => {
+      const o = byCat[k];
+      const pct = o.n ? (o.ok / o.n) * 100 : 0;
+      return '<div class="srow"><span class="sl">' + esc(k) + "</span>"
+        + '<span class="sbar2"><i style="width:' + pct.toFixed(1) + '%"></i></span>'
+        + '<span class="sn">' + o.ok + "/" + o.n + "</span></div>";
+    }).join("");
+
+    /* 错词榜 */
+    wrongList.sort((a, b) => b.c.wrong - a.c.wrong || a.w.en.localeCompare(b.w.en));
+    const wrongRows = wrongList.slice(0, 8).map((o) => {
+      return '<div class="sfix" data-en="' + esc(o.w.en) + '">'
+        + '<b>' + esc(o.w.en) + "</b><span>" + esc(o.w.zh) + "</span>"
+        + '<em>错 ' + o.c.wrong + "</em></div>";
+    }).join("");
+
+    const sum14 = days.reduce((a, x) => a + x.n, 0);
+    const streakBest = st.streak.n || 0;
+
+    return '<div class="stat-wrap">'
+      + '<div class="stat-top">'
+      + '<div class="sbig"><b>' + sum14 + "</b><small>近 14 天背了</small></div>"
+      + '<div class="sbig"><b>' + acc + "%</b><small>累计正确率</small></div>"
+      + '<div class="sbig"><b>' + streakBest + "</b><small>连续天数</small></div>"
+      + "</div>"
+      + '<div class="spane"><div class="spanel-t">每天背了多少<small>点柱子看那天的数</small></div>'
+      + '<div class="sbars">' + bars + "</div></div>"
+      + '<div class="spane"><div class="spanel-t">掌握度<small>共 ' + WORDS.length + " 个词</small></div>" + boxRows + "</div>"
+      + '<div class="spane"><div class="spanel-t">分类进度<small>会一半以上才算</small></div>' + catRows + "</div>"
+      + (wrongRows
+        ? '<div class="spane"><div class="spanel-t">错得最多的<small>点一下念一遍</small></div>' + wrongRows + "</div>"
+        : '<div class="spane"><div class="spanel-t">错得最多的</div><div class="search-empty">还没错过词，厉害</div></div>')
+      + "</div>";
+  }
+
+  /* ══════════ 导出 CSV（实验 · csv） ══════════ */
+  function buildCsv() {
+    const esc2 = (v) => {
+      const s = String(v == null ? "" : v);
+      return /[",\r\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+    };
+    const head = ["英文", "中文", "词性", "音标", "谐音", "例句", "分类", "掌握度", "对", "错", "收藏", "下次复习"];
+    const rows = WORDS.filter(inFilter).map((w) => {
+      const c = card(w.en);
+      const due = c.due ? todayStr(c.due) : "";
+      return [w.en, w.zh, w.pos || "", w.ipa || "", w.hom || "", w.phrase || "", w.cat || "",
+        c.box, c.right || 0, c.wrong || 0, c.fav ? 1 : 0, due].map(esc2).join(",");
+    });
+    /* BOM：Excel 不认没 BOM 的 UTF-8 中文 */
+    return "\ufeff" + head.join(",") + "\r\n" + rows.join("\r\n") + "\r\n";
+  }
+
+  function render() {
+    if (!expOn("stat") && mode === "stat") mode = "card";
+    renderStats(); renderChips(); renderTabs(); renderStage();
+    $("#foot").innerHTML = WORDS.length + " 个词 · 进度就存在这台机器上 · 键盘 1 不认识 / 2 认识 / 空格翻面"
+      + ' · <span class="ver">v' + APP_VERSION + "</span>"
+      + (hotUpdated() ? '<span class="hot">热更</span>' : "");
+  }
+
+  /* ══════════ 交互 ══════════ */
+  function submitSpell() {
+    const w = cur(); if (!w || (spellState && spellState.answered)) return;
+    const inp = $("#spellIn"); if (!inp) return;
+    const val = inp.value;
+    const alts = [w.en, w.en.replace(/\s*[（(][^)）]*[)）]/g, ""), (w.en.match(/[（(]([^)）]+)[)）]/) || [])[1] || ""]
+      .map(norm).filter(Boolean);
+    const ok = alts.indexOf(norm(val)) >= 0 && norm(val).length > 1;
+    spellState = { answered: true, ok };
+    grade(ok);
+    render();
+    if (ok) speak(w.en);
+  }
+
+  function pickOpt(i) {
+    const w = cur(); if (!w) return;
+    if (mode === "quiz" && quiz && !quiz.answered) {
+      const chosen = quiz.opts[i];
+      quiz.answered = true; quiz.chosen = chosen;
+      const ok = chosen === w[quiz.field];
+      grade(ok); render();
+      if (!ok) speak(w.en);
+    } else if (mode === "listen" && listenState && !listenState.answered) {
+      const chosen = listenState.opts[i];
+      listenState.answered = true; listenState.chosen = chosen;
+      const ok = chosen === w.en;
+      grade(ok); render();
+      speak(w.en);
+    }
+  }
+
+  /* ══════════ 卡片左右滑 ══════════ */
+  let drag = null;
+  let suppressClick = 0;
+
+  function resetDrag() {
+    const wrap = document.querySelector(".card-wrap");
+    if (wrap) { wrap.style.transition = ""; wrap.style.transform = ""; wrap.style.opacity = ""; }
+    drag = null;
+  }
+  function fling(visual, move) {
+    const wrap = document.querySelector(".card-wrap");
+    if (wrap) {
+      wrap.style.transition = "transform .24s ease-out, opacity .24s";
+      wrap.style.transform = "translateX(" + visual * 620 + "px) rotate(" + visual * 10 + "deg)";
+      wrap.style.opacity = "0";
+    }
+    suppressClick = now() + 350;
+    window.setTimeout(function () {
+      const ok = step(move);
+      if (!ok) {
+        // 到边界了：把卡片拉回来
+        const w2 = document.querySelector(".card-wrap");
+        if (w2) {
+          w2.style.transition = "transform .26s cubic-bezier(.2,.9,.3,1), opacity .26s";
+          w2.style.transform = "";
+          w2.style.opacity = "";
+        }
+        toast(move < 0 ? "已经是第一个了" : "已经是最后一个了");
+      }
+    }, 160);
+    drag = null;
+  }
+
+  document.addEventListener("pointerdown", function (e) {
+    if (mode !== "card" || finished || !cur()) return;
+    if (!e.target || !e.target.closest) return;
+    if (!e.target.closest(".card")) return;
+    if (e.target.closest(".speak-btn")) return;
+    drag = { x: e.clientX, y: e.clientY, dx: 0, moved: false };
+  });
+
+  document.addEventListener("pointermove", function (e) {
+    if (!drag) return;
+    const dx = e.clientX - drag.x, dy = e.clientY - drag.y;
+    if (!drag.moved) {
+      if (Math.abs(dx) < 8) return;
+      if (Math.abs(dx) <= Math.abs(dy)) { drag = null; return; }
+    }
+    drag.moved = true;
+    drag.dx = dx;
+    const wrap = document.querySelector(".card-wrap");
+    if (wrap) {
+      wrap.style.transition = "none";
+      wrap.style.transform = "translateX(" + dx + "px) rotate(" + dx * 0.03 + "deg)";
+    }
+  }, { passive: true });
+
+  document.addEventListener("pointerup", function () {
+    if (!drag) return;
+    const dx = drag.dx, moved = drag.moved;
+    if (moved && Math.abs(dx) > 62) {
+      // 向右拖 = 回到上一个（像翻相册），向左拖 = 下一个
+      fling(dx > 0 ? 1 : -1, dx > 0 ? -1 : 1);
+      return;
+    }
+    if (moved) { resetDrag(); suppressClick = now() + 120; return; }
+    drag = null;
+  });
+
+  document.addEventListener("pointercancel", function () { if (drag) resetDrag(); });
+
+  document.addEventListener("input", function (e) {
+    if (e.target && e.target.id === "listSearch") {
+      searchText = e.target.value;
+      const body = document.getElementById("listBody");
+      if (body) body.innerHTML = renderRows();
+    }
+  });
+
+  document.addEventListener("click", function (e) {
+    const t = e.target;
+    if (suppressClick && now() < suppressClick) return;
+
+    const chip = t.closest(".chip");
+    if (chip) { filter = chip.dataset.f; buildQueue(); render(); return; }
+
+    const tab = t.closest(".tab");
+    if (tab) {
+      mode = tab.dataset.m;
+      buildQueue(); render();
+      if (mode === "card") autoSpeakCurrent();
+      if (mode === "listen" && !listenState) renderStage();
+      return;
+    }
+
+    const fav = t.closest("[data-fav]");
+    if (fav) {
+      e.stopPropagation();
+      const c = card(fav.dataset.fav); c.fav = !c.fav; save(); render();
+      return;
+    }
+
+    const row = t.closest(".row");
+    if (row) { speak(row.dataset.en); return; }
+
+    /* 统计页：点错词排行念一遍；点柱子看那天的数 */
+    const sfix = t.closest(".sfix");
+    if (sfix) { speak(sfix.dataset.en); return; }
+    const sbar = t.closest(".sbar");
+    if (sbar) { toast(sbar.dataset.d + " · 背了 " + sbar.dataset.n + " 个"); return; }
+
+    const opt = t.closest(".opt[data-opt]");
+    if (opt) { pickOpt(Number(opt.dataset.opt)); return; }
+
+    const act = t.closest("[data-act]");
+    if (act) {
+      const a = act.dataset.act;
+      if (act.classList.contains("speak-btn")) e.stopPropagation();
+      if (a === "fav") {
+        const w = cur();
+        if (!w) return;
+        const cc = card(w.en);
+        cc.fav = !cc.fav;
+        save();
+        Array.prototype.forEach.call(document.querySelectorAll('[data-act="fav"]'), (b) => {
+          b.classList.toggle("on", cc.fav);
+          b.textContent = cc.fav ? "★" : "☆";
+        });
+        renderChips();
+        buzz("tap");
+        toast(cc.fav ? "已收藏" : "取消收藏");
+        return;
+      }
+      if (a === "flip") { toggleCard(); return; }
+      if (a === "speak") { const w = cur(); if (w) speak(w.en); return; }
+      if (a === "yes") { grade(true); advance(); return; }
+      if (a === "no") { grade(false); advance(); return; }
+      if (a === "next") { advance(); return; }
+      if (a === "submit") { submitSpell(); return; }
+      if (a === "show") {
+        const w = cur();
+        spellState = { answered: true, ok: false };
+        grade(false); render(); speak(w.en); return;
+      }
+      if (a === "restart") { buildQueue(); render(); if (mode === "card") autoSpeakCurrent(); return; }
+      if (a === "openlist") { mode = "list"; render(); return; }
+    }
+
+    if (t.closest("#openSet")) { $("#mask").classList.add("show"); refreshTts(); refreshUpdLabels(); refreshExpUI(); return; }
+    if (t.id === "mask" || t.closest("#closeSet")) { $("#mask").classList.remove("show"); return; }
+
+    if (t.closest("#openExp")) { $("#expMask").classList.add("show"); renderExp(); return; }
+    if (t.closest("#openExp2")) { $("#mask").classList.remove("show"); $("#expMask").classList.add("show"); renderExp(); return; }
+    if (t.id === "expMask" || t.closest("#closeExp")) { $("#expMask").classList.remove("show"); return; }
+  });
+
+  document.addEventListener("keydown", function (e) {
+    if (e.target && e.target.tagName === "INPUT" && e.target.type === "number") return;
+    if (e.target && e.target.id === "spellIn") {
+      if (e.key === "Enter") {
+        if (spellState && spellState.answered) advance(); else submitSpell();
+        e.preventDefault();
+      }
+      return;
+    }
+    if (e.target && e.target.tagName === "TEXTAREA") return;
+
+    const k = e.key;
+
+    // 拼写模式：焦点不在输入框时 Enter 也要能用
+    if (mode === "spell" && cur() && !finished && k === "Enter") {
+      const inp = document.getElementById("spellIn");
+      if (spellState && spellState.answered) { e.preventDefault(); advance(); }
+      else if (inp && document.activeElement === inp) { e.preventDefault(); submitSpell(); }
+      else if (inp) { e.preventDefault(); inp.focus(); }
+      return;
+    }
+    if (mode === "card" && cur() && !finished) {
+      if (k === " ") { e.preventDefault(); toggleCard(); return; }
+      if (k === "Enter") { e.preventDefault(); grade(true); advance(); return; }
+      if (k === "1") { e.preventDefault(); grade(false); advance(); return; }
+      if (k === "2") { e.preventDefault(); grade(true); advance(); return; }
+      if (k === "ArrowLeft") { e.preventDefault(); step(-1); return; }
+      if (k === "ArrowRight") { e.preventDefault(); step(1); return; }
+      if (k === "r" || k === "R") { speak(cur().en); return; }
+    }
+    if ((mode === "quiz" || mode === "listen") && cur() && !finished) {
+      if (/^[1-4]$/.test(k)) {
+        e.preventDefault();
+        const answered = mode === "quiz" ? (quiz && quiz.answered) : (listenState && listenState.answered);
+        if (answered && k === "1") { advance(); return; }
+        pickOpt(Number(k) - 1);
+        return;
+      }
+      if (k === "Enter") {
+        const answered = mode === "quiz" ? (quiz && quiz.answered) : (listenState && listenState.answered);
+        if (answered) { e.preventDefault(); advance(); }
+        return;
+      }
+      if (k === "r" || k === "R") { speak(cur().en); return; }
+    }
+  });
+
+  /* ══════════ 设置面板 ══════════ */
+  let refreshTts = function () {};
+  let refreshExpUI = function () {};
+
+  /* 复制到系统剪贴板：安卓走原生（WebView 的 execCommand 不可靠），网页退到 clipboard API */
+  function copyToClipboard(text, okMsg) {
+    const s = String(text == null ? "" : text);
+    if (window.AndroidTTS && typeof window.AndroidTTS.copy === "function") {
+      try { window.AndroidTTS.copy(s); toast(okMsg); return; } catch (e) { /* 退到网页那条路 */ }
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(s).then(
+        function () { toast(okMsg); },
+        function () { toast("复制不了，长按文本框全选复制"); }
+      );
+      return;
+    }
+    toast("复制不了，长按文本框全选复制");
+  }
+
+  function initSettings() {
+    const mask = document.createElement("div");
+    mask.className = "mask";
+    mask.id = "mask";
+    mask.innerHTML =
+      '<div class="sheet">'
+      + '<h3>设置 <button class="x" id="closeSet">✕</button></h3>'
+
+      // ── 更新卡片（放最上面，一眼看到版本和一键更新）
+      + '<div class="upd-card" id="updCard">'
+      + '<div class="upd-row"><div class="upd-cur"><b id="updCur">v' + APP_VERSION + "</b>"
+      + '<small id="updSub">检查中…</small></div>'
+      + '<button class="mini primary" id="updGo">检查更新</button></div>'
+      + '<div class="mini-btns">'
+      + '<button class="mini" id="updFile">从文件导入</button>'
+      + '<button class="mini" id="updAdvBtn">地址 / 只更安装包</button>'
+      + "</div>"
+      + '<div id="updAdv" style="display:none">'
+      + '<input class="url-input" id="updUrl" autocomplete="off" spellcheck="false">'
+      + '<div class="mini-btns"><button class="mini" id="updApkDo">只下安装包</button></div>'
+      + "</div></div>"
+
+      // ── 学习
+      + '<div class="set-sec">学习</div>'
+      + '<div class="set-row"><div class="lab">每日目标<small>1 ~ 100 个，只影响上面那个百分比</small></div>'
+      + '<input type="number" id="setPerDay" min="1" max="100" step="1"></div>'
+      + '<div class="set-row"><div class="lab">拼写提示<small>提示越少越接近「真会写」</small></div>'
+      + '<div class="seg" id="setSpellHint"><button data-v="none">无</button><button data-v="first">首字母</button><button data-v="length">+长度</button></div></div>'
+      + '<div class="set-row"><div class="lab">今日进度<small>重新数今天背了多少</small></div>'
+      + '<button class="mini" id="resetToday">清零</button></div>'
+
+      // ── 朗读与手感
+      + '<div class="set-sec">朗读与手感</div>'
+      + '<div class="set-row"><div class="lab">朗读<small id="ttsState">检查中…</small></div>'
+      + '<button class="mini" id="testTts">试听</button></div>'
+      + '<div class="set-row"><div class="lab">朗读方式<small>自动＝翻到新词就念；手动＝只点单词</small></div>'
+      + '<div class="seg" id="setSpeakMode"><button data-v="off">手动</button><button data-v="on">自动</button></div></div>'
+      + '<div class="set-row"><div class="lab">发音速度<small id="rateVal">0.88×</small></div>'
+      + '<input type="range" id="setRate" min="0.6" max="1.2" step="0.04"></div>'
+      + '<div class="set-row"><div class="lab">显示中文谐音<small>不想被谐音带偏就关掉，只留音标</small></div>'
+      + '<div class="switch" id="setHom"></div></div>'
+      + '<div class="set-row"><div class="lab">答对答错提示音<small>很轻的一声，听久了可以关</small></div>'
+      + '<div class="switch" id="setSound"></div></div>'
+      + '<div class="set-row"><div class="lab">震动反馈<small>判定对错、收藏、翻面、一轮走完时震一下</small></div>'
+      + '<div class="switch" id="setHaptic"></div></div>'
+      /* 实验 · 浅色主题（关掉这个实验这行不显示） */
+      + '<div class="set-row" id="rowTheme"><div class="lab">主题<small>浅色白天在教室看着不费眼</small></div>'
+      + '<div class="seg" id="setTheme"><button data-v="dark">深色</button><button data-v="light">浅色</button></div></div>'
+
+      // ── 数据
+      + '<div class="set-sec">数据</div>'
+      + '<div class="set-row" style="display:block"><div class="lab">加自己的词<small>一行一个：英文 | 中文 | 例句 | 词性 | 分类 | 音标 | 谐音</small></div>'
+      + '<textarea class="imp" id="imp" placeholder="rudder | 舵 | rudder angle indicator&#10;anchor windlass | 锚机"></textarea>'
+      + '<div class="mini-btns"><button class="mini" id="doImport">导入词</button></div></div>'
+      + '<div class="set-row" style="display:block"><div class="lab">备份<small>换手机：点导出 → 复制 → 到新设备点恢复</small></div>'
+      + '<textarea class="imp" id="backupText" placeholder="点「导出」会在这里生成一段文字，复制走；恢复时粘贴回来再点「恢复」"></textarea>'
+      + '<div class="mini-btns">'
+      + '<button class="mini" id="exportProg">导出</button>'
+      + '<button class="mini" id="copyProg">复制</button>'
+      + '<button class="mini" id="importProg">恢复</button>'
+      + '<button class="mini danger" id="resetProg">清空进度</button>'
+      + "</div></div>"
+      /* 实验 · 导出 CSV（关掉这个实验这整行不显示） */
+      + '<div class="set-row" id="rowCsv" style="display:block"><div class="lab">导出 CSV<small>当前筛选范围，带掌握度 / 对错 / 下次复习，Excel 直接打开</small></div>'
+      + '<textarea class="imp" id="csvText" placeholder="点「生成 CSV」会在这里出来，然后点「复制」"></textarea>'
+      + '<div class="mini-btns">'
+      + '<button class="mini" id="doCsv">生成 CSV</button>'
+      + '<button class="mini" id="copyCsv">复制</button>'
+      + "</div></div>"
+
+      // ── 关于
+      + '<div class="set-sec">关于</div>'
+      + '<div class="set-row" style="display:block">'
+      + '<div class="lab">版本<small id="verLine">v' + APP_VERSION + " · " + APP_DATE + " · 测试版</small></div>"
+      + '<div class="mini-btns"><button class="mini" id="showLog">更新日志</button>'
+      + '<button class="mini" id="hideLog" style="display:none">收起</button></div>'
+      + '<div id="logBox" style="display:none"></div></div>'
+      + '<div class="set-row"><div class="lab">这一份是什么<small>正式版 v1.9.1 不动它；测试版试新功能，进度另存一份</small></div>'
+      + '<button class="mini" id="openExp2">实验台</button></div>'
+      + '<div class="mini-btns" style="justify-content:center;margin-top:18px">'
+      + '<span class="hint">键盘：空格翻面 · 1 不认识 · 2 认识 · R 重念</span></div>'
+      + "</div>";
+
+    document.body.appendChild(mask);
+
+    const pd = mask.querySelector("#setPerDay");
+    const sd = mask.querySelector("#setSound");
+    const hp = mask.querySelector("#setHaptic");
+    const hm = mask.querySelector("#setHom");
+    const sm = mask.querySelector("#setSpeakMode");
+    const rt = mask.querySelector("#setRate");
+    const rateVal = mask.querySelector("#rateVal");
+    pd.value = st.perDay;
+    sd.classList.toggle("on", st.sound);
+    if (hp) hp.classList.toggle("on", !!st.haptic);
+    hm.classList.toggle("on", st.showHom);
+
+    const markSpeak = () => {
+      Array.prototype.forEach.call(sm.querySelectorAll("button"), (b) => {
+        b.classList.toggle("on", (b.dataset.v === "on") === !!st.autoSpeak);
+      });
+    };
+    markSpeak();
+    sm.addEventListener("click", (e) => {
+      const b = e.target.closest("button[data-v]");
+      if (!b) return;
+      st.autoSpeak = b.dataset.v === "on";
+      markSpeak(); save();
+    });
+
+    rt.value = st.ttsRate;
+    rateVal.textContent = Number(st.ttsRate).toFixed(2) + "×";
+    rt.addEventListener("input", () => {
+      st.ttsRate = Math.round(parseFloat(rt.value) * 100) / 100;
+      rateVal.textContent = st.ttsRate.toFixed(2) + "×";
+      applyRate();
+      save();
+    });
+
+    pd.addEventListener("change", () => {
+      let v = parseInt(pd.value, 10); if (!v || v < 1) v = 1; if (v > 100) v = 100;
+      pd.value = v; st.perDay = v; save(); render();
+    });
+    sd.addEventListener("click", () => { st.sound = !st.sound; sd.classList.toggle("on", st.sound); save(); });
+    if (hp) hp.addEventListener("click", () => {
+      st.haptic = !st.haptic;
+      hp.classList.toggle("on", st.haptic);
+      save();
+      if (st.haptic) buzz("tap");   // 开的时候自己震一下，知道有没有效果
+    });
+    hm.addEventListener("click", () => {
+      st.showHom = !st.showHom;
+      hm.classList.toggle("on", st.showHom);
+      save(); render();
+    });
+
+    /* ── 实验项在这张面板上的显隐（开关改了以后要跟着变） ── */
+    const themeSeg = mask.querySelector("#setTheme");
+    const rowTheme = mask.querySelector("#rowTheme");
+    const rowCsv = mask.querySelector("#rowCsv");
+    const markTheme = () => {
+      if (!themeSeg) return;
+      Array.prototype.forEach.call(themeSeg.querySelectorAll("button"), (b) => {
+        b.classList.toggle("on", b.dataset.v === (st.theme || "dark"));
+      });
+    };
+    markTheme();
+    if (themeSeg) {
+      themeSeg.addEventListener("click", (e) => {
+        const b = e.target.closest("button[data-v]");
+        if (!b) return;
+        st.theme = b.dataset.v === "light" ? "light" : "dark";
+        markTheme(); applyTheme(); save();
+      });
+    }
+    refreshExpUI = function () {
+      if (rowTheme) rowTheme.style.display = expOn("theme") ? "" : "none";
+      if (rowCsv) rowCsv.style.display = expOn("csv") ? "block" : "none";
+    };
+    refreshExpUI();
+
+    /* ── 导出 CSV ── */
+    const csvBox = mask.querySelector("#csvText");
+    const doCsv = mask.querySelector("#doCsv");
+    if (doCsv) {
+      doCsv.addEventListener("click", function () {
+        if (!csvBox) return;
+        csvBox.value = buildCsv();
+        csvBox.focus();
+        csvBox.setSelectionRange(0, 0);
+        toast("生成了 " + WORDS.filter(inFilter).length + " 行，点「复制」带走");
+      });
+    }
+    const copyCsv = mask.querySelector("#copyCsv");
+    if (copyCsv) {
+      copyCsv.addEventListener("click", function () {
+        if (!csvBox || !csvBox.value) { toast("先点「生成 CSV」"); return; }
+        copyToClipboard(csvBox.value, "CSV 复制好了");
+      });
+    }
+
+    refreshTts = function () {
+      const el = mask.querySelector("#ttsState");
+      if (!el) return;
+      let txt;
+      if (window.AndroidTTS && typeof window.AndroidTTS.ready === "function") {
+        txt = window.AndroidTTS.ready() ? "系统语音引擎已就绪" : "系统语音引擎还没就绪，可能没装英文语音包";
+      } else if (window.speechSynthesis) {
+        txt = voices.length ? "浏览器语音 · " + voices.length + " 个音色" : "浏览器语音（这台设备可能没装英语语音）";
+      } else {
+        txt = "这台设备没有可用的语音";
+      }
+      el.textContent = txt;
+    };
+    mask.querySelector("#testTts").addEventListener("click", () => {
+      refreshTts();
+      ttsWarned = false;
+      speak("main engine cooling water");
+    });
+
+    /* 更新日志 */
+    const logBox = mask.querySelector("#logBox");
+    const showLogBtn = mask.querySelector("#showLog");
+    const hideLogBtn = mask.querySelector("#hideLog");
+
+    function logItem(e) {
+      let items = "";
+      (e.add || []).forEach(function (t) {
+        items += '<li><b class="log-tag">新增</b>' + esc(t) + "</li>";
+      });
+      (e.fix || []).forEach(function (t) {
+        items += '<li><b class="log-tag fix">修复</b>' + esc(t) + "</li>";
+      });
+      return '<div class="log-item' + (e.v === APP_VERSION ? " cur" : "") + '">'
+        + '<div class="log-v">v' + esc(e.v) + "<span>" + esc(e.d) + "</span></div>"
+        + (items ? '<ul class="log-list">' + items + "</ul>" : "")
+        + "</div>";
+    }
+
+    /* 更新日志只摊开最近三版，更早的收起来 —— 一屏能看完 */
+    function renderLog() {
+      const head = CHANGELOG.slice(0, 3);
+      const rest = CHANGELOG.slice(3);
+      logBox.innerHTML = '<div class="log">' + head.map(logItem).join("")
+        + (rest.length
+          ? '<button class="mini log-more" id="moreLog">更早的 ' + rest.length + " 个版本</button>"
+            + '<div id="olderLog" style="display:none">' + rest.map(logItem).join("") + "</div>"
+          : "")
+        + "</div>";
+      const more = logBox.querySelector("#moreLog");
+      if (more) {
+        more.addEventListener("click", function () {
+          const box = logBox.querySelector("#olderLog");
+          const open = box.style.display !== "none";
+          box.style.display = open ? "none" : "block";
+          more.textContent = open ? "更早的 " + rest.length + " 个版本" : "收起早的";
+        });
+      }
+    }
+
+    showLogBtn.addEventListener("click", function () {
+      if (!logBox.innerHTML) renderLog();
+      logBox.style.display = "block";
+      showLogBtn.style.display = "none";
+      hideLogBtn.style.display = "";
+    });
+    hideLogBtn.addEventListener("click", function () {
+      logBox.style.display = "none";
+      showLogBtn.style.display = "";
+      hideLogBtn.style.display = "none";
+    });
+
+    /* 「再点一次确认」——WebView 里 window.confirm 是哑的，所以不用 confirm */
+    function armConfirm(btn, label, cb) {
+      if (btn.dataset.armed === "1") {
+        btn.dataset.armed = "";
+        btn.classList.remove("armed");
+        btn.textContent = label;
+        cb();
+        return;
+      }
+      btn.dataset.armed = "1";
+      btn.classList.add("armed");
+      btn.textContent = "再点一次";
+      window.setTimeout(function () {
+        if (btn.dataset.armed === "1") {
+          btn.dataset.armed = "";
+          btn.classList.remove("armed");
+          btn.textContent = label;
+        }
+      }, 3500);
+    }
+
+    const sh = mask.querySelector("#setSpellHint");
+    const markSpell = () => {
+      Array.prototype.forEach.call(sh.querySelectorAll("button"), (b) => {
+        b.classList.toggle("on", b.dataset.v === st.spellHint);
+      });
+    };
+    markSpell();
+    sh.addEventListener("click", (e) => {
+      const b = e.target.closest("button[data-v]");
+      if (!b) return;
+      st.spellHint = b.dataset.v;
+      markSpell(); save(); render();
+    });
+
+    /* 在线更新 */
+    const updUrlInput = mask.querySelector("#updUrl");
+    if (updUrlInput) {
+      updUrlInput.value = st.updateUrl || UPD_DEFAULT;
+      updUrlInput.addEventListener("change", function () {
+        st.updateUrl = (updUrlInput.value || "").trim().replace(/\/+$/, "") || UPD_DEFAULT;
+        updUrlInput.value = st.updateUrl;
+        save(); refreshUpdLabels();
+      });
+    }
+    const updAdvBtn = mask.querySelector("#updAdvBtn");
+    if (updAdvBtn) {
+      updAdvBtn.addEventListener("click", function () {
+        const box = mask.querySelector("#updAdv");
+        const open = box.style.display !== "none";
+        box.style.display = open ? "none" : "block";
+        updAdvBtn.textContent = open ? "地址 / 只更安装包" : "收起";
+      });
+    }
+    const updGoBtn = mask.querySelector("#updGo");
+    if (updGoBtn) {
+      updGoBtn.addEventListener("click", function () {
+        if (updUrlInput) {
+          st.updateUrl = (updUrlInput.value || "").trim().replace(/\/+$/, "") || UPD_DEFAULT;
+          save();
+        }
+        refreshUpdLabels();
+        if (pendingUpdate()) applyUpdate();
+        else checkUpdate(false);
+      });
+    }
+    const updApkBtn = mask.querySelector("#updApkDo");
+    if (updApkBtn) updApkBtn.addEventListener("click", installApkOnline);
+    const updFileBtn = mask.querySelector("#updFile");
+    if (updFileBtn) updFileBtn.addEventListener("click", importFromFile);
+
+    mask.querySelector("#doImport").addEventListener("click", () => {
+      const raw = mask.querySelector("#imp").value.trim();
+      if (!raw) return;
+      let n = 0;
+      raw.split(/\r?\n/).forEach((line) => {
+        const p = line.split("|").map((s) => s.trim());
+        if (!p[0] || !p[1]) return;
+        st.custom.push({ en: p[0], pos: p[3] || "n.", zh: p[1], phrase: p[2] || "", cat: p[4] || "自加", ipa: p[5] || "", hom: p[6] || "" });
+        n++;
+      });
+      mask.querySelector("#imp").value = "";
+      rebuildWordlist(); buildQueue(); save(); render();
+      toast(n ? "加了 " + n + " 个词" : "一行都没认出来，格式是  英文 | 中文");
+    });
+
+    mask.querySelector("#exportProg").addEventListener("click", () => {
+      const bk = mask.querySelector("#backupText");
+      bk.value = JSON.stringify(st);
+      bk.focus();
+      bk.setSelectionRange(0, bk.value.length);
+      toast("生成了，点「复制」带走");
+    });
+
+    mask.querySelector("#copyProg").addEventListener("click", () => {
+      const bk = mask.querySelector("#backupText");
+      if (!bk.value) { toast("先点「导出」"); return; }
+      if (window.AndroidTTS && typeof window.AndroidTTS.copy === "function") {
+        try { window.AndroidTTS.copy(bk.value); toast("复制好了"); return; } catch (e) {}
+      }
+      bk.focus();
+      bk.setSelectionRange(0, bk.value.length);
+      let done = false;
+      try { done = document.execCommand("copy"); } catch (e) { done = false; }
+      if (done) { toast("复制好了"); return; }
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(bk.value).then(
+          () => toast("复制好了"),
+          () => toast("复制不了，长按文本框全选复制")
+        );
+        return;
+      }
+      toast("复制不了，长按文本框全选复制");
+    });
+
+    mask.querySelector("#importProg").addEventListener("click", function () {
+      const bk = mask.querySelector("#backupText");
+      const raw = bk.value.trim();
+      if (!raw) { toast("先把备份文字粘贴到框里"); return; }
+      let obj = null;
+      try { obj = JSON.parse(raw); } catch (e) { obj = null; }
+      if (!obj || typeof obj !== "object" || !obj.words) { toast("这段不像备份内容"); return; }
+      armConfirm(this, "恢复", () => {
+        const merged = Object.assign(fresh(), obj);
+        if (!merged.words || typeof merged.words !== "object") merged.words = {};
+        if (!Array.isArray(merged.custom)) merged.custom = [];
+        if (typeof merged.showHom !== "boolean") merged.showHom = true;
+        if (["none", "first", "length"].indexOf(merged.spellHint) < 0) merged.spellHint = "first";
+        if (!merged.today || merged.today.d !== todayStr()) merged.today = { d: todayStr(), n: 0 };
+        st = merged;
+        st.lastVersion = APP_VERSION;
+        save(); rebuildWordlist(); buildQueue(); render();
+        toast("恢复完成，共 " + WORDS.length + " 个词");
+      });
+    });
+
+    mask.querySelector("#resetToday").addEventListener("click", function () {
+      armConfirm(this, "清零", () => {
+        st.today = { d: todayStr(), n: 0 };
+        save(); render();
+        toast("今日进度清零了");
+      });
+    });
+
+    mask.querySelector("#resetProg").addEventListener("click", function () {
+      armConfirm(this, "清空进度", () => {
+        const keepCustom = st.custom.slice();
+        const keepSet = {
+          perDay: st.perDay, autoSpeak: st.autoSpeak,
+          sound: st.sound, showHom: st.showHom, spellHint: st.spellHint
+        };
+        st = fresh();
+        st.custom = keepCustom;
+        Object.assign(st, keepSet);
+        save(); rebuildWordlist(); buildQueue(); render();
+        toast("进度清空了，词库还在");
+      });
+    });
+  }
+
+  /* ══════════ 启动 ══════════ */
+  let storageOK = true;
+  try {
+    localStorage.setItem(KEY + "__probe", "1");
+    localStorage.removeItem(KEY + "__probe");
+  } catch (e) { storageOK = false; }
+
+  rebuildWordlist();
+  if (!WORDS.length) {
+    document.body.innerHTML = '<div class="done-card" style="margin:40px auto;max-width:520px"><div class="big">📄</div><h2>没读到词库</h2><p>words.js 和 index.html 要放在同一个文件夹里。</p></div>';
+    return;
+  }
+  initSettings();
+  initExperiments();
+  applyTheme();
+  applyRate();
+  buildQueue();
+  render();
+  if (!storageOK) {
+    setTimeout(function () {
+      toast("这个打开方式存不住进度，用浏览器打开这个文件就正常了");
+    }, 800);
+  }
+  if (st.lastVersion !== APP_VERSION) {
+    const upgraded = Object.keys(st.words || {}).length > 0;
+    st.lastVersion = APP_VERSION;
+    save();
+    setTimeout(function () {
+      toast(upgraded
+        ? "已更新到 v" + APP_VERSION + "，⚙ 里能看这次改了什么"
+        : "欢迎 · v" + APP_VERSION + "，⚙ 里有更新日志");
+    }, storageOK ? 1100 : 5000);
+  }
+
+  /* 安卓壳子里：安静地看一眼有没有新版内容，有就提示一句，不自动换 */
+  if (updHasApp()) {
+    setTimeout(function () { refreshUpdLabels(); checkUpdate(true); }, 2200);
+  }
+
+  window.__se = { get st() { return st; }, rebuild: rebuildWordlist, checkUpdate: checkUpdate, applyUpdate: applyUpdate, pending: pendingUpdate, reset: function () { updPending = null; } };
+  /* 测试版多暴露几样给回归测试用 */
+  window.__beta = {
+    get ver() { return APP_VERSION; },
+    exps: EXPS, expOn: expOn, histDays: histDays, buildCsv: buildCsv,
+    applyTheme: applyTheme, save: save
+  };
+
+  /* 喘口气给壳子看：安卓壳里的看门狗 6 秒等不到这一声，就判定这页坏了、退回内置页面。
+     这是「热更兜底」的页面那一半 —— 一定要放在所有初始化之后。 */
+  window.__ready = true;
+  try {
+    if (window.AndroidUpdate && typeof window.AndroidUpdate.heartbeat === "function") {
+      window.AndroidUpdate.heartbeat();
+    }
+  } catch (e) { /* 网页版没有壳，正常 */ }
+})();
+
+  </script>
+</body>
+</html>
